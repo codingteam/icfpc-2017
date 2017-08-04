@@ -4,6 +4,10 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization
 
+import scalax.collection.Graph
+import scalax.collection.GraphPredef._
+import scalax.collection.GraphEdge._
+
 import scala.io.Source
 
 object GameMap {
@@ -12,26 +16,36 @@ object GameMap {
 
   case class Site(id: SiteId)
 
-  case class River(source: SiteId, target: SiteId)
+  case class River(source: SiteId, target: SiteId) {
+    def toEdge(map : Map) : UnDiEdge[Site] = {
+      return UnDiEdge(map.siteMap.get(source).get, map.siteMap.get(target).get)
+    }
+  }
 
   implicit val formats = Serialization.formats(NoTypeHints)
-    // Serialization.formats(FullTypeHints(List(classOf[Map], classOf[Site], classOf[River])))
-  // }
 
   object Map {
-    def fromJson(str : String) : Map = {
+    def fromJson(str: String): Map = {
       return parse(str).extract[Map]
     }
 
-    def fromJsonFile(path : String) : Map = {
+    def fromJsonFile(path: String): Map = {
       val source = Source.fromFile(path)
       return parse(source.reader()).extract[Map]
     }
   }
 
-  case class Map(sites: List[Site], rivers: List[River], mines: List[SiteId]) {
-    def toJson() : String = {
+  class Map(var sites: List[Site], var rivers: List[River], var mines: List[SiteId]) {
+
+    var siteMap = sites.map(site => (site.id, site)).toMap
+
+    def toJson(): String = {
       return Serialization.write(this)
+    }
+
+    def toGraph(): Graph[Site, UnDiEdge] = {
+      val edges = rivers.map(r => r.toEdge(this))
+      return Graph.from(sites, edges)
     }
   }
 
