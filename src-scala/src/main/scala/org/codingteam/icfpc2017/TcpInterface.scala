@@ -50,7 +50,7 @@ class TcpInterface private(socket: Socket) extends StreamInterface {
 
   override def writeToServer(data: JValue): Unit = {
     val os = socket.getOutputStream
-    val writer = new BufferedWriter(new OutputStreamWriter(os, "ANSI"), 1024 * 1024)
+    val writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"), 1024 * 1024)
     val str = JsonMethods.pretty(data)
     writer
       .append(String.valueOf(str.length))
