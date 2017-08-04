@@ -6,11 +6,11 @@ object AppEntry extends App {
     args match {
       case Array("--test-map", mapFilePath) =>
         val map = GameMap.Map.fromJsonFile(mapFilePath)
-        print(map.toGraph())
+        println(map.toGraph())
 
         val moveStr = """{"claim":{"punter":0,"source":0,"target":1}}"""
         val move = Messages.parseMoveStr(moveStr)
-        print(move)
+        println(move)
 
       case _ =>
         println("Hello!")

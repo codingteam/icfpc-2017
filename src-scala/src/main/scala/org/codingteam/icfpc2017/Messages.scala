@@ -11,7 +11,7 @@ object Messages {
 
   implicit val formats = Serialization.formats(NoTypeHints)
 
-  case class Punter(name: String)
+  case class Punter(name: BigInt)
 
   abstract class Message {
   }
@@ -54,7 +54,7 @@ object Messages {
     def unapply(json : JValue) : Option[Claim] = {
       for {
         claim <- (json \ "claim").toOption
-        JString(name) <- (claim \ "punter").toOption
+        JInt(name) <- (claim \ "punter").toOption
         JInt(source) <- (claim \ "source").toOption
         JInt(target) <- (claim \ "target").toOption
       } yield Claim(Punter(name), Site(source), Site(target))
@@ -71,7 +71,7 @@ object Messages {
   object Pass {
     def unapply(json : JValue) : Option[Pass] = {
       for {
-        JString(name) <- (json \ "pass").toOption
+        JInt(name) <- (json \ "pass").toOption
       } yield Pass(Punter(name))
     }
 
@@ -100,7 +100,7 @@ object Messages {
 
   def parseServerMessageJson(json: JValue): Option[Message] = {
     for {
-      JString(name) <- (json \ "you").toOption
+      JInt(name) <- (json \ "you").toOption
     } yield HelloRs(Punter(name))
 
     if (hasKey(json, "punter")) {
