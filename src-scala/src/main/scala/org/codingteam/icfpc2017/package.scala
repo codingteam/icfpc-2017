@@ -1,6 +1,7 @@
 package org.codingteam
 
-import org.json4s.jackson.Json
+import org.codingteam.icfpc2017.Messages.Move
+import org.json4s.JsonAST.JValue
 
 package object icfpc2017 {
 
@@ -17,7 +18,7 @@ package object icfpc2017 {
 
     def nextMove(): Move
 
-    def updateState(moves: Seq[PlayerMove])
+    def updateState(moves: Seq[Move])
 
     /**
       * Вероятность того, что данная стратегия сможет сделать хороший ход.
@@ -28,21 +29,36 @@ package object icfpc2017 {
       */
     def goodMoveProbability(): Double
 
+    // TODO: save/restore state methods.
   }
-
-  case class PlayerMove()
-
-  case class Move()
 
   /**
     * Интерфейс классов, реализующих ввод/вывод (с сервером или в pipe).
     */
-  trait StreamInterface {
+  trait StreamInterface extends AutoCloseable {
 
-    def readFromServer(): Json
+    def readFromServer(): JValue
 
-    def writeToServer(data: Json)
+    def writeToServer(data: JValue)
+
+    def close(): Unit
+  }
+
+  object Parsing {
+
+    object I {
+      def unapply(arg: String): Option[Int] = {
+        try {
+          Some(arg.toInt)
+        } catch {
+          case _: NumberFormatException => None
+        }
+      }
+    }
 
   }
 
+  object Config {
+    val MyPunterName = "codingpunter"
+  }
 }
