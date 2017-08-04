@@ -7,7 +7,7 @@ object AppEntry extends App{
   private def run(mapFilePath : String): Unit ={
     // println("Hello, world!")
     val map = GameMap.Map.fromJsonFile(mapFilePath)
-    print(map.toJson())
+    print(map.toGraph())
   }
 
   run(args(0))
