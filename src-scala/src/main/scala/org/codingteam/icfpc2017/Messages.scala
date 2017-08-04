@@ -122,6 +122,31 @@ object Messages {
     }
   }
 
+  case class Score(punter : Punter, score: Int) extends Message
+
+  object Score {
+    def unapply(json : JValue) : Option[Score] = {
+      if (hasKey(json, "score")) {
+        return Some(json.extract[Score])
+      } else {
+        return None
+      }
+    }
+  }
+
+  case class Stop(moves : List[Move], scores : List[Score]) extends Message
+
+  object Stop {
+    def unapply(json : JValue) : Option[Stop] = {
+      if (hasKey(json, "stop")) {
+        // FIXME
+        return Some(Stop(List(), List()))
+      } else {
+        return None
+      }
+    }
+  }
+
   def hasKey(json: JValue, key: String): Boolean = {
     if ((json \ key) != JNothing) {
       return true
@@ -147,6 +172,7 @@ object Messages {
       case HelloRs(hello: HelloRs) => Some(hello)
       case SetupRq(setup: SetupRq) => Some(setup)
       case MoveRq(move: MoveRq) => Some(move)
+      case Stop(stop : Stop) => Some(stop)
       case default => None
     }
   }
