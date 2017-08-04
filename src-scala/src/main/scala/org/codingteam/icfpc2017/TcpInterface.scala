@@ -16,10 +16,9 @@ class TcpInterface private(socket: Socket) extends StreamInterface {
 
   override def readFromServer(): JValue = {
     val is = socket.getInputStream
-    val reader = new BufferedReader(new InputStreamReader(is, "ANSI"), 1024 * 1024)
 
-    def readChar(): Char = {
-      val b = reader.read()
+    def readByte(): Char = {
+      val b = is.read()
       if (b == -1)
         throw new EOFException("End of stream")
       b.toChar
@@ -27,7 +26,7 @@ class TcpInterface private(socket: Socket) extends StreamInterface {
 
     def getSize(): Int = {
       @inline def readCharAsInt(): Int = {
-        val c = readChar()
+        val c = readByte()
         if (c.isDigit) c - '0' else -1
       }
 
@@ -41,10 +40,11 @@ class TcpInterface private(socket: Socket) extends StreamInterface {
     }
 
     val n = getSize()
-    val sb = new StringBuilder(n)
-    0 until n foreach (_ => sb.append(readChar()))
+    var array: Array[Byte] = new Array[Byte](n)
+    is.read(array, 0, n)
+    val input = new String(array)
     import org.json4s._
-    JsonMethods.parse(sb.toString())
+    JsonMethods.parse(input)
   }
 
   override def writeToServer(data: JValue): Unit = {
