@@ -28,7 +28,25 @@ object Messages {
 
   case class HelloRs(punter: Punter) extends Message
 
+  object HelloRs {
+    def unapply(json: JValue): Option[HelloRs] = {
+      for {
+        JInt(name) <- (json \ "you").toOption
+      } yield HelloRs(Punter(name))
+    }
+  }
+
   case class SetupRq(punterName: String, punters: Int, map: Map) extends Message
+
+  object SetupRq {
+    def unapply(json: JValue): Option[SetupRq] = {
+      if (hasKey(json, "punter")) {
+        return Some(json.extract[SetupRq])
+      } else {
+        return None
+      }
+    }
+  }
 
   case class SetupRs(punter: Punter) extends Message with Serializable {
     def toJson(): JObject = {
@@ -38,7 +56,32 @@ object Messages {
 
   abstract class Move extends Message with Serializable
 
+  object Move {
+    def unapply(json: JValue): Option[Move] = {
+      return parseMove(json)
+    }
+  }
+
   case class MoveRq(moves: List[Move])
+
+  object MoveRq {
+    def getMovesList(json: JValue): List[Move] = {
+      (json \ "move" \ "moves").toOption match {
+        case None => List()
+        case Some(JArray(moves)) => for {move <- moves} yield parseMove(move).get
+        case default => List()
+      }
+    }
+
+    def unapply(json: JValue): Option[MoveRq] = {
+      if (hasKey(json, "move")) {
+        val moves = getMovesList(json)
+        return Some(MoveRq(moves))
+      } else {
+        return None
+      }
+    }
+  }
 
   case class Claim(punter: Punter, source: Site, target: Site) extends Move {
     def toJson(): JObject = {
@@ -51,7 +94,7 @@ object Messages {
   }
 
   object Claim {
-    def unapply(json : JValue) : Option[Claim] = {
+    def unapply(json: JValue): Option[Claim] = {
       for {
         claim <- (json \ "claim").toOption
         JInt(name) <- (claim \ "punter").toOption
@@ -69,12 +112,11 @@ object Messages {
   }
 
   object Pass {
-    def unapply(json : JValue) : Option[Pass] = {
+    def unapply(json: JValue): Option[Pass] = {
       for {
         JInt(name) <- (json \ "pass").toOption
       } yield Pass(Punter(name))
     }
-
   }
 
   def hasKey(json: JValue, key: String): Boolean = {
@@ -87,11 +129,10 @@ object Messages {
 
   def parseMove(json: JValue): Option[Move] = {
     json match {
-      case Pass(pass : Pass) => Some(pass)
-      case Claim(claim : Claim) => Some(claim)
+      case Pass(pass: Pass) => Some(pass)
+      case Claim(claim: Claim) => Some(claim)
       case default => None
     }
-
   }
 
   def parseMoveStr(str: String): Option[Move] = {
@@ -99,14 +140,14 @@ object Messages {
   }
 
   def parseServerMessageJson(json: JValue): Option[Message] = {
-    for {
-      JInt(name) <- (json \ "you").toOption
-    } yield HelloRs(Punter(name))
-
-    if (hasKey(json, "punter")) {
-      return Some(json.extract[SetupRq])
+    json match {
+      case HelloRs(hello: HelloRs) => Some(hello)
+      case SetupRq(setup: SetupRq) => Some(setup)
+      case default => None
     }
+  }
 
-    return None
+  def parseServerMessageStr(str: String): Option[Message] = {
+    return parseServerMessageJson(parse(str))
   }
 }
