@@ -1,5 +1,7 @@
 package org.codingteam.icfpc2017
 
+import org.codingteam.icfpc2017.Messages.Move
+
 import scala.util.Random
 
 /**
@@ -21,7 +23,7 @@ class DelegatingStrategy(val strategies: Seq[Strategy]) extends Strategy {
     good(rnd nextInt good.size)._1.nextMove()
   }
 
-  override def updateState(moves: Seq[PlayerMove]): Unit = {
+  override def updateState(moves: Seq[Move]): Unit = {
     strategies foreach (_.updateState(moves))
   }
 

@@ -1,17 +1,20 @@
 package org.codingteam.icfpc2017
 
-import org.json4s._
+import org.codingteam.icfpc2017.GameMap._
 import org.json4s.JsonDSL._
+import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization
-
-import org.codingteam.icfpc2017.GameMap._
 
 object Messages {
 
   implicit val formats = Serialization.formats(NoTypeHints)
 
   case class Punter(name: String)
+
+  object Punter {
+    lazy val Me = Punter(Config.MyPunterName)
+  }
 
   abstract class Message {
   }
