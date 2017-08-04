@@ -12,10 +12,10 @@ object HandlerLoop {
   def runLoop(server: StreamInterface, strategy: Strategy): Unit = {
     try {
 
-      val hello = HelloRq(Punter.Me)
-      server.writeToServer(hello.toJson())
-      val helloResponse = server.readFromServer()
       // TODO: greetings
+//      val hello = HelloRq(Config.MyPunterName)
+//      server.writeToServer(hello.toJson())
+//      val helloResponse = server.readFromServer()
       //      val HelloRs(rs) = helloResponse
       // ...
       while (true) {

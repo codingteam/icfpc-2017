@@ -8,7 +8,7 @@ import org.codingteam.icfpc2017.Messages.{Move, Pass, Punter}
   */
 @deprecated(message = "Do not use it!!!")
 class DummyStrategy extends Strategy {
-  override def nextMove(): Move = Pass(Punter.Me)
+  override def nextMove(): Move = Pass(Punter(0))
 
   override def updateState(moves: Seq[Move]): Unit = {}
 
