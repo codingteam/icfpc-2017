@@ -43,6 +43,7 @@ class TcpInterface private(socket: Socket) extends StreamInterface {
     var array: Array[Byte] = new Array[Byte](n)
     is.read(array, 0, n)
     val input = new String(array)
+    println("<-  " + input)
     import org.json4s._
     JsonMethods.parse(input)
   }
@@ -55,6 +56,7 @@ class TcpInterface private(socket: Socket) extends StreamInterface {
       .append(String.valueOf(str.length))
       .append(':')
       .append(str)
+    println("->  " + str)
     writer.flush()
   }
 
