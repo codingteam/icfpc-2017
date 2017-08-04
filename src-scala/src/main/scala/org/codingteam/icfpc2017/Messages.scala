@@ -6,6 +6,8 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization
 
+import scala.io.Source
+
 object Messages {
 
   implicit val formats = Serialization.formats(NoTypeHints)
@@ -61,13 +63,15 @@ object Messages {
     }
   }
 
-  case class MoveRq(moves: List[Move])
+  case class MoveRq(moves: List[Move]) extends Message
 
   object MoveRq {
     def getMovesList(json: JValue): List[Move] = {
       (json \ "move" \ "moves").toOption match {
         case None => List()
-        case Some(JArray(moves)) => for {move <- moves} yield parseMove(move).get
+        case Some(JArray(moves)) =>
+          //println(moves)
+          for {move <- moves} yield parseMove(move).get
         case default => List()
       }
     }
@@ -113,7 +117,7 @@ object Messages {
   object Pass {
     def unapply(json: JValue): Option[Pass] = {
       for {
-        JInt(name) <- (json \ "pass").toOption
+        JInt(name) <- (json \ "pass" \ "punter").toOption
       } yield Pass(Punter(name))
     }
   }
@@ -142,11 +146,17 @@ object Messages {
     json match {
       case HelloRs(hello: HelloRs) => Some(hello)
       case SetupRq(setup: SetupRq) => Some(setup)
+      case MoveRq(move: MoveRq) => Some(move)
       case default => None
     }
   }
 
   def parseServerMessageStr(str: String): Option[Message] = {
     return parseServerMessageJson(parse(str))
+  }
+
+  def parseServerMessageFile(path: String): Option[Message] = {
+    val source = Source.fromFile(path)
+    return parseServerMessageJson(parse(source.reader()))
   }
 }

@@ -8,9 +8,16 @@ object AppEntry extends App {
         val map = GameMap.Map.fromJsonFile(mapFilePath)
         println(map.toGraph())
 
-        val moveStr = """{"claim":{"punter":0,"source":0,"target":1}}"""
+      case Array("--test-move-parse") =>
+        //val moveStr = """{"claim":{"punter":0,"source":0,"target":1}}"""
+        val moveStr = """{"pass":{"punter":1}}"""
         val move = Messages.parseMoveStr(moveStr)
         println(move)
+
+      case Array("--test-parse", path) =>
+        val message = Messages.parseServerMessageFile(path)
+        println(message)
+
       case Array("--tcp", host, Parsing.I(port)) =>
         runTcpLoop(host, port)
       case _ =>
