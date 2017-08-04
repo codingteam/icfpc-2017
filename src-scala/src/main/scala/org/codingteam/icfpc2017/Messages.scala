@@ -21,9 +21,9 @@ object Messages {
     def toJson(): JObject
   }
 
-  case class HelloRq(punter: Punter) extends Message with Serializable {
+  case class HelloRq(punter: String) extends Message with Serializable {
     def toJson(): JObject = {
-      return ("me" -> punter.name)
+      return ("me" -> punter)
     }
   }
 
