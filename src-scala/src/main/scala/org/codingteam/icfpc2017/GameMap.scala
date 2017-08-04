@@ -12,7 +12,7 @@ import scala.io.Source
 
 object GameMap {
 
-  type SiteId = Int
+  type SiteId = BigInt
 
   case class Site(id: SiteId)
 

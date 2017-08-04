@@ -9,13 +9,15 @@ import org.codingteam.icfpc2017.GameMap._
 
 object Messages {
 
+  implicit val formats = Serialization.formats(NoTypeHints)
+
   case class Punter(name: String)
 
   abstract class Message {
   }
 
   trait Serializable {
-    def toJson() : JObject
+    def toJson(): JObject
   }
 
   case class HelloRq(punter: Punter) extends Message with Serializable {
@@ -24,31 +26,87 @@ object Messages {
     }
   }
 
-  case class HelloRs(punter: Punter) extends Message with Serializable {
-    def toJson(): JObject = {
-      return ("you" -> punter.name)
-    }
-  }
+  case class HelloRs(punter: Punter) extends Message
 
-  case class SetupRs(punter : Punter) extends Message with Serializable {
-    def toJson() : JObject = {
+  case class SetupRq(punterName: String, punters: Int, map: Map) extends Message
+
+  case class SetupRs(punter: Punter) extends Message with Serializable {
+    def toJson(): JObject = {
       return ("ready" -> punter.name)
     }
   }
 
-  case class Claim(punter : Punter, source : Site, target : Site) extends Message with Serializable {
-    def toJson() : JObject = {
+  abstract class Move extends Message with Serializable
+
+  case class MoveRq(moves: List[Move])
+
+  case class Claim(punter: Punter, source: Site, target: Site) extends Move {
+    def toJson(): JObject = {
       return ("claim" ->
         ("punter" -> punter.name) ~
-        ("source" -> source.id) ~
-        ("target" -> target.id)
-      )
+          ("source" -> source.id) ~
+          ("target" -> target.id)
+        )
     }
   }
 
-  case class Pass(punter : Punter) extends Message with Serializable {
-    def toJson() : JObject = {
+  object Claim {
+    def unapply(json : JValue) : Option[Claim] = {
+      for {
+        claim <- (json \ "claim").toOption
+        JString(name) <- (claim \ "punter").toOption
+        JInt(source) <- (claim \ "source").toOption
+        JInt(target) <- (claim \ "target").toOption
+      } yield Claim(Punter(name), Site(source), Site(target))
+    }
+
+  }
+
+  case class Pass(punter: Punter) extends Move {
+    def toJson(): JObject = {
       return ("pass" -> ("punter" -> punter.name))
     }
+  }
+
+  object Pass {
+    def unapply(json : JValue) : Option[Pass] = {
+      for {
+        JString(name) <- (json \ "pass").toOption
+      } yield Pass(Punter(name))
+    }
+
+  }
+
+  def hasKey(json: JValue, key: String): Boolean = {
+    if ((json \ key) != JNothing) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  def parseMove(json: JValue): Option[Move] = {
+    json match {
+      case Pass(pass : Pass) => Some(pass)
+      case Claim(claim : Claim) => Some(claim)
+      case default => None
+    }
+
+  }
+
+  def parseMoveStr(str: String): Option[Move] = {
+    return parseMove(parse(str))
+  }
+
+  def parseServerMessageJson(json: JValue): Option[Message] = {
+    for {
+      JString(name) <- (json \ "you").toOption
+    } yield HelloRs(Punter(name))
+
+    if (hasKey(json, "punter")) {
+      return Some(json.extract[SetupRq])
+    }
+
+    return None
   }
 }
