@@ -8,10 +8,7 @@ object AppEntry extends App{
     // println("Hello, world!")
     val map = GameMap.Map.fromJsonFile(mapFilePath)
     print(map.toJson())
-    print(map.sites)
   }
 
-  override def main(args : Array[String]) : Unit = {
-    run(args(0))
-  }
+  run(args(0))
 }
