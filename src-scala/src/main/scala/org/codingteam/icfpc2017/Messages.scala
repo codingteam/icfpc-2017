@@ -27,17 +27,17 @@ object Messages {
     }
   }
 
-  case class HelloRs(punter: Punter) extends Message
+  case class HelloRs(punter: String) extends Message
 
   object HelloRs {
     def unapply(json: JValue): Option[HelloRs] = {
       for {
-        JInt(name) <- (json \ "you").toOption
-      } yield HelloRs(Punter(name))
+        JString(name) <- (json \ "you").toOption
+      } yield HelloRs(name)
     }
   }
 
-  case class SetupRq(punterName: String, punters: Int, map: Map) extends Message
+  case class SetupRq(punter: BigInt, punters: Int, map: Map) extends Message
 
   object SetupRq {
     def unapply(json: JValue): Option[SetupRq] = {
