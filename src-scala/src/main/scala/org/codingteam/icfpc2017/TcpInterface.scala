@@ -10,7 +10,7 @@ import org.json4s.jackson.JsonMethods
 /**
   * TCP handler.
   */
-class TcpInterface private(socket: Socket) extends StreamInterface {
+class TcpInterface private(socket: Socket, logFileName: Option[String]) extends StreamInterface {
 
   // TODO: copy this impl to generic handler.
 
@@ -57,6 +57,14 @@ class TcpInterface private(socket: Socket) extends StreamInterface {
       sb.toString
     }
     println("<-  " + input)
+    logFileName match {
+      case Some(fileName) =>
+        new PrintWriter(new FileOutputStream(new File(fileName), true)) {
+          write(input)
+          close()
+        }
+    }
+
     import org.json4s._
     JsonMethods.parse(input)
   }
@@ -77,8 +85,8 @@ class TcpInterface private(socket: Socket) extends StreamInterface {
 }
 
 object TcpInterface {
-  def connect(server: String, port: Int): TcpInterface = {
+  def connect(server: String, port: Int, log: Option[String]): TcpInterface = {
     val socket = new Socket(server, port)
-    new TcpInterface(socket)
+    new TcpInterface(socket, log)
   }
 }

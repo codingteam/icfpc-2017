@@ -1,5 +1,7 @@
 package org.codingteam.icfpc2017
 
+import java.time.{Clock, Instant}
+
 import org.codingteam.icfpc2017.Common.Punter
 
 object AppEntry extends App {
@@ -35,15 +37,18 @@ object AppEntry extends App {
         println(map.getPunterSubgraph(Punter(666)))
 
       case Array("--tcp", host, Parsing.I(port)) =>
-        runTcpLoop(host, port)
+        runTcpLoop(host, port, None)
+
+      case Array("--tcp-with-log", host, Parsing.I(port)) =>
+        runTcpLoop(host, port, Some(s"logs/game-${Instant.now().toEpochMilli}.lson"))
       case _ =>
         println("Hello!")
     }
 
   }
 
-  def runTcpLoop(host: String, port: Int): Unit = {
-    HandlerLoop.runLoop(TcpInterface.connect(host, port), strategy, offline = false)
+  def runTcpLoop(host: String, port: Int, log: Option[String]): Unit = {
+    HandlerLoop.runLoop(TcpInterface.connect(host, port, log), strategy, offline = false)
   }
 
   // TODO: implement real strategy.
