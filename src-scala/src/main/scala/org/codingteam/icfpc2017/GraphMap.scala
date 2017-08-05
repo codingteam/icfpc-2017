@@ -38,7 +38,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     val edge = sourceNode.connectionsWith(targetNode).head
     graph -= edge
 
-    implicit val factory = scalax.collection.edge.LDiEdge
+    implicit val factory = scalax.collection.edge.LUnDiEdge
     graph.addLEdge(source, target)(punter)
   }
 
