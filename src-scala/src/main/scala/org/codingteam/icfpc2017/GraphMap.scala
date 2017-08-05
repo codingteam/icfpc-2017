@@ -169,7 +169,6 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     }
   }
 
-
   def getPunterSubgraph(punter : Punter) : GraphMap = {
     val g = graph
     val newGraph = g filter g.having(edge = {

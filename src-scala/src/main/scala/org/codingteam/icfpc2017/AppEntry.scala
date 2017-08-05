@@ -65,6 +65,7 @@ object AppEntry extends App {
       case "codingpunter-dumb-obstructor" => new DelegatingStrategy(Seq(new DumbObstructorStrategy()))
       case "random-codingpunter" => new DelegatingStrategy(Seq(new RandomConnectorStrategy()))
       case "codingpunter" => new DelegatingStrategy(Seq(new GreedyStrategy()))
+      case "connector" => new DelegatingStrategy(Seq(new ComponentConnectorStrategy()))
       case _ => throw new Exception("unsupported name: " + name)
     }
   }
