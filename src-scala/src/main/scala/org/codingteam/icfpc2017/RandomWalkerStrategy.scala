@@ -37,14 +37,11 @@ class RandomWalkerStrategy extends Strategy {
   }
 
   override def updateState(moves: Seq[Move]) = {
-    for (move <- moves) {
-      move match {
-        case Claim(punter, source, target) => {
-          val sourceNode = map.siteToNode(source)
-          val targetNode = map.siteToNode(target)
-          graph.removeEdge(sourceNode, targetNode)
-        }
-        case _ => {}
+    moves.foreach {
+      case Claim(punter, source, target) => {
+        val sourceNode = map.siteToNode(source)
+        val targetNode = map.siteToNode(target)
+        graph.removeEdge(sourceNode, targetNode)
       }
     }
   }
