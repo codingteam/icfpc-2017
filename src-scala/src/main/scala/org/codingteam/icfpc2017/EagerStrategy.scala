@@ -23,6 +23,9 @@ class EagerStrategy extends Strategy {
   override def nextMove(): Move = {
     var neighbours = graph.getPunterNeighbours(me)
     if (neighbours.isEmpty) {
+      neighbours = graph.getFreeNearMines()
+    }
+    if (neighbours.isEmpty) {
       neighbours = graph.getFreeEdges()
     }
     if (neighbours.isEmpty) {
