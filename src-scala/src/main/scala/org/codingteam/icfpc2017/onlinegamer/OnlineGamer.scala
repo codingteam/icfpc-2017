@@ -17,13 +17,13 @@ case class StatsMap(players: StatsMapPlayers, port: Int, mapName: String)
 
 object MainActor {
 
-  def props(maps: List[StatsMap], strategy: Strategy) = Props(new MainActor(maps, strategy))
+  def props(maps: List[(StatsMap, Strategy)]) = Props(new MainActor(maps))
 
   case class LoopStop(port: Int)
 
 }
 
-class MainActor(maps: List[StatsMap], strategy: Strategy) extends Actor {
+class MainActor(maps: List[(StatsMap, Strategy)]) extends Actor {
 
   import MainActor._
 
@@ -33,14 +33,15 @@ class MainActor(maps: List[StatsMap], strategy: Strategy) extends Actor {
     case "start" =>
       println(s"Running for maps: ${maps}")
 
-      maps.foreach { map =>
-        val loopActor = context.actorOf(RunLoopActor.props(OnlineGamer.SERVER_HOST, map.port, strategy))
+      maps.foreach {
+        case (map, strategy) =>
+          val loopActor = context.actorOf(RunLoopActor.props(OnlineGamer.SERVER_HOST, map.port, strategy))
 
-        runningLoops += map.port
+          runningLoops += map.port
 
-        println(s"Running loop: ${map.port}; $runningLoops")
+          println(s"Running loop: ${map.port}; $runningLoops")
 
-        loopActor ! "loop"
+          loopActor ! "loop"
       }
 
     case LoopStop(port) =>
@@ -86,7 +87,7 @@ trait OnlineGamer {
 
   def run(maps: List[String]): Unit = {
     val mapz = runOnSpecificMaps(maps, parseStats())
-    val mainActor = actorSystem.actorOf(MainActor.props(mapz, strategy()), "main")
+    val mainActor = actorSystem.actorOf(MainActor.props(mapz.map(m => (m, strategy()))), "main")
 
     mainActor ! "start"
   }
