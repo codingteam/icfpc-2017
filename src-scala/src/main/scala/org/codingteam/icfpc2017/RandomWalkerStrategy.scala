@@ -48,7 +48,7 @@ class RandomWalkerStrategy extends Strategy {
 
 
   override def goodMoveProbability(): Double = {
-    1
+    1 / graph.getFreeEdges().size
   }
 
   def state: JValue = JNothing
