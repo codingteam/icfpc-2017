@@ -39,11 +39,8 @@ object HandlerLoop {
           }
           case _ => (List[Messages.Move]())
         }
-        println("Got " + moves.length + " moves to process")
         strategy.updateState(moves)
-        println("State updated")
         val myMove = strategy.nextMove()
-        println("Found a suitable move: " + myMove.toJson().toString)
         server.writeToServer(myMove.toJson())
       }
 

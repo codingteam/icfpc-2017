@@ -21,25 +21,16 @@ class RandomWalkerStrategy extends Strategy {
   }
 
   override def updateState(moves: Seq[Move]) = {
-    println("RW: got " + moves.length + " moves to process")
     for (move <- moves) {
-      println("Im in da loop")
       move match {
         case Claim(punter, source, target) => {
-          println("Processing a claim")
           val sourceNode = map.siteToNode(source)
-          println("Mapped source into node")
           val targetNode = map.siteToNode(target)
-          println("Mapped target into node")
           graph.removeEdge(sourceNode, targetNode)
         }
-        case _ => {
-          println("Processing something else")
-        }
+        case _ => {}
       }
-      println("RW: processed a move")
     }
-    println("RW: done processing moves")
   }
 
 
