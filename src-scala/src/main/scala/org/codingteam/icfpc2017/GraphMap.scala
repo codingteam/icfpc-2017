@@ -79,6 +79,13 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
   def punterDistance(punter : Punter, source: Node, target: Node) : Int = {
     getPunterSubgraph(punter).distance(source, target)
   }
+
+  def test(): Unit = {
+    val g = graph
+    for (c <- g.componentTraverser()) {
+      println(c.nodes)
+    }
+  }
 }
 
 object GraphMap {
