@@ -10,9 +10,11 @@ import org.json4s.jackson.JsonMethods
 /**
   * TCP handler.
   */
-class TcpInterface private(socket: Socket, logFileName: Option[String]) extends StreamInterface {
+class TcpInterface private(socket: Socket, logFileName: Option[String]) extends StreamInterface with LogbackLogger {
 
   // TODO: copy this impl to generic handler.
+
+  override def loggerName: Option[String] = logFileName
 
   override def readFromServer(): JValue = {
     val is = socket.getInputStream
@@ -56,15 +58,8 @@ class TcpInterface private(socket: Socket, logFileName: Option[String]) extends 
       }
       sb.toString
     }
-    println("<-  " + input)
-    logFileName match {
-      case Some(fileName) =>
-        new PrintWriter(new FileOutputStream(new File(fileName), true)) {
-          write(input)
-          close()
-        }
-      case None => ()
-    }
+
+    logger.info(s"<- $input")
 
     import org.json4s._
     JsonMethods.parse(input)
@@ -78,7 +73,9 @@ class TcpInterface private(socket: Socket, logFileName: Option[String]) extends 
       .append(String.valueOf(str.length))
       .append(':')
       .append(str)
-    println("->  " + str)
+
+    logger.info(s"-> $str")
+
     writer.flush()
   }
 

@@ -6,16 +6,15 @@ import java.time.{Clock, Instant}
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.onlinegamer.OneBotOnServerGamer
 
-object AppEntry extends App {
+object AppEntry extends App with LogbackLogger {
 
   private def run(): Unit = {
     args match {
       case Array("--test-map", mapFilePath) =>
         val m = GameMap.Map.fromJsonFile(mapFilePath)
         val map = GraphMap.fromMap(m)
-        println(map)
-        println(map.getMineNodes)
-      // println(map.toGraph())
+        logger.info(map.toString)
+        logger.info(map.getMineNodes.toString)
 
       case Array("--test-move-parse") =>
         //val moveStr = """{"claim":{"punter":0,"source":0,"target":1}}"""
@@ -52,14 +51,14 @@ object AppEntry extends App {
       case Array("--tcp-with-log", host, Parsing.I(port), name) =>
         runTcpLoop(host, port, Some(s"logs/game-${Instant.now().toEpochMilli}.lson"), name)
       case _ =>
-        println("Hello!")
+        logger.info("Hello!")
     }
 
   }
 
   def runTcpLoop(host: String, port: Int, log: Option[String], name: String): Unit = {
     val strategy = selectStrategy(name)
-    HandlerLoop.runLoop(TcpInterface.connect(host, port, log), strategy, name, offline = false)
+    HandlerLoop(log).runLoop(TcpInterface.connect(host, port, log), strategy, name, offline = false)
   }
 
   def selectStrategy(name: String): Strategy = {
@@ -71,7 +70,10 @@ object AppEntry extends App {
         (10.0, new GreedyStrategy()),
         (1.0, new DumbObstructorStrategy()),
         (1.0, new RandomConnectorStrategy())))
-      case _ => throw new Exception("unsupported name: " + name)
+      case _ =>
+        val ex = new Exception("unsupported name: " + name)
+        logger.trace("Exception", ex)
+        throw ex
     }
   }
 

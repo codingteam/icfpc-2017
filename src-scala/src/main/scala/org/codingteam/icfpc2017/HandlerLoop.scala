@@ -5,10 +5,20 @@ import java.io.EOFException
 import org.codingteam.icfpc2017.Messages._
 import org.codingteam.icfpc2017.Common.Punter
 
+object HandlerLoop {
+
+  def apply(logName: Option[String] = None): HandlerLoop = {
+    new HandlerLoop {
+      override def loggerName: Option[String] = logName
+    }
+  }
+
+}
+
 /**
   * Message processing cycle.
   */
-object HandlerLoop {
+class HandlerLoop extends LogbackLogger {
 
   def runLoop(server: StreamInterface, strategy: Strategy, name : String, offline: Boolean): Unit = {
     try {
@@ -39,7 +49,7 @@ object HandlerLoop {
             strategy.nextMove()
           }
           case Some(stop : Stop) => {
-            println("Our score: " + stop.getScore(me))
+            logger.info(s"Our score: ${stop.getScore(me)}")
             Pass(me)
           }
           case _ => Pass(me)
@@ -48,8 +58,8 @@ object HandlerLoop {
       }
 
     } catch {
-      case e: EOFException =>
-        println("Exit during EOF from server")
+      case _: EOFException =>
+        logger.trace("Exit during EOF from server")
     } finally {
       server.close()
     }

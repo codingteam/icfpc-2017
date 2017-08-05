@@ -4,7 +4,7 @@ import java.time.Instant
 
 import akka.actor.{Actor, Props}
 import akka.actor.Actor.Receive
-import org.codingteam.icfpc2017.{HandlerLoop, Strategy, TcpInterface}
+import org.codingteam.icfpc2017.{HandlerLoop, LogbackLogger, Strategy, TcpInterface}
 
 object RunLoopActor {
 
@@ -13,15 +13,17 @@ object RunLoopActor {
 
 }
 
-class RunLoopActor(host: String, port: Int, name: String, strategy: Strategy) extends Actor {
+class RunLoopActor(host: String, port: Int, name: String, strategy: Strategy) extends Actor with LogbackLogger {
+
+  override def loggerName: Option[String] = Some(s"bot-$name-$port-${strategy.getClass.getCanonicalName}")
 
   override def receive: Receive = {
     case "loop" =>
       try {
-        HandlerLoop.runLoop(TcpInterface.connect(host, port, Some(s"logs/online-gamer-${Instant.now().toEpochMilli}.lson")), strategy, name, offline = false)
+        HandlerLoop(loggerName).runLoop(TcpInterface.connect(host, port, loggerName), strategy, name, offline = false)
       } catch {
         case ex: Exception =>
-          ex.printStackTrace()
+          logger.trace("Exception", ex)
       } finally {
         sender() ! MainActor.LoopStop(port)
       }

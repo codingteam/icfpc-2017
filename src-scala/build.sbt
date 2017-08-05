@@ -20,6 +20,8 @@ libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.5.3"
 
 libraryDependencies += "net.ruippeixotog" %% "scala-scraper" % "2.0.0"
 
+libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.0.1"
+
 scalacOptions += "-opt:l:classpath"
 
 scalacOptions += "-deprecation"
