@@ -1,7 +1,7 @@
 package org.codingteam.icfpc2017
 
-import org.codingteam.icfpc2017.GameMap._
 import org.codingteam.icfpc2017.Common._
+import org.codingteam.icfpc2017.GameMap._
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
@@ -45,13 +45,18 @@ object Messages {
     }
   }
 
-  case class SetupRs(punter: Punter) extends Message with Serializable {
+  case class SetupRs(punter: Punter, state: JValue = JNothing) extends Message with Serializable {
     def toJson(): JObject = {
-      "ready" -> punter.id
+      if (state == JNothing)
+        "ready" -> punter.id
+      else
+        JObject("ready" -> punter.id, "state" -> state)
     }
   }
 
-  abstract class Move extends Message with Serializable
+  abstract class Move extends Message with Serializable {
+    var state: JValue = JNothing
+  }
 
   object Move {
     def unapply(json: JValue): Option[Move] = {
@@ -59,7 +64,7 @@ object Messages {
     }
   }
 
-  case class MoveRq(moves: List[Move]) extends Message
+  case class MoveRq(moves: List[Move], state: JValue = JNothing) extends Message
 
   object MoveRq {
     def getMovesList(json: JValue): List[Move] = {
@@ -75,17 +80,24 @@ object Messages {
     def unapply(json: JValue): Option[MoveRq] = {
       hasKey(json, "move") toOption {
         val moves = getMovesList(json)
-        MoveRq(moves)
+        val state = json \ "state"
+        MoveRq(moves, state)
       }
     }
   }
 
   case class Claim(punter: Punter, source: Site, target: Site) extends Move {
-    def toJson(): JObject = {
+    def toJson(): JObject = if (state == JNothing) {
       "claim" ->
         ("punter" -> punter.id) ~
           ("source" -> source.id) ~
           ("target" -> target.id)
+    } else {
+      "claim" ->
+        (("punter" -> punter.id) ~
+          ("source" -> source.id) ~
+          ("target" -> target.id)) ~
+          ("state" -> state)
     }
   }
 
@@ -101,8 +113,10 @@ object Messages {
   }
 
   case class Pass(punter: Punter) extends Move {
-    def toJson(): JObject = {
+    def toJson(): JObject = if (state == JNothing) {
       "pass" -> ("punter" -> punter.id)
+    } else {
+      ("pass" -> ("punter" -> punter.id)) ~ ("state" -> state)
     }
   }
 
@@ -125,9 +139,9 @@ object Messages {
     }
   }
 
-  case class Stop(moves: List[Move], scores: List[Score]) extends Message {
-    def getScore(punter : Punter): BigInt = {
-      scores.map({s => (s.punter.id, s.score)}).toMap.get(punter.id).getOrElse(0)
+  case class Stop(moves: List[Move], scores: List[Score], state: JValue = JNothing) extends Message {
+    def getScore(punter: Punter): BigInt = {
+      scores.map({ s => (s.punter.id, s.score) }).toMap.get(punter.id).getOrElse(0)
     }
   }
 
@@ -138,7 +152,7 @@ object Messages {
         case Some(JArray(scores)) =>
           //println(scores)
           scores.map {
-              case Score(score) => score
+            case Score(score) => score
           }
         case _ => List()
       }
@@ -147,7 +161,8 @@ object Messages {
     def unapply(json: JValue): Option[Stop] = {
       hasKey(json, "stop") toOption {
         // FIXME
-        Stop(List(), getScoresList(json))
+        val state = json \ "state"
+        Stop(List(), getScoresList(json), state)
       }
     }
   }

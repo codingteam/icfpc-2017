@@ -1,7 +1,10 @@
 package org.codingteam
 
-import org.codingteam.icfpc2017.Messages.Move
+import java.io.{InputStream, OutputStream}
+import java.net.Socket
+
 import org.codingteam.icfpc2017.Common.Punter
+import org.codingteam.icfpc2017.Messages.Move
 import org.json4s.JsonAST.JValue
 
 package object icfpc2017 {
@@ -63,6 +66,41 @@ package object icfpc2017 {
     def writeToServer(data: JValue)
 
     def close(): Unit
+  }
+
+  trait SocketLike extends AutoCloseable {
+
+    def inputStream: InputStream
+
+    def outputStream: OutputStream
+
+    def close(): Unit
+  }
+
+  object SocketLike {
+
+    def fromSocket(socket: Socket): SocketLike = new TcpSocketLike(socket)
+
+    def fromStdInOut(): SocketLike = new StdInOutSocketLike
+
+    class TcpSocketLike(socket: Socket) extends SocketLike {
+
+      override def inputStream: InputStream = socket.getInputStream
+
+      override def outputStream: OutputStream = socket.getOutputStream
+
+      override def close(): Unit = socket.close()
+    }
+
+    class StdInOutSocketLike extends SocketLike {
+
+      override def inputStream: InputStream = System.in
+
+      override def outputStream: OutputStream = System.out
+
+      override def close(): Unit = {}
+    }
+
   }
 
   object Parsing {

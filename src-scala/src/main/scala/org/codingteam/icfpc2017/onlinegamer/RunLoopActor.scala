@@ -4,7 +4,8 @@ import java.time.Instant
 
 import akka.actor.{Actor, Props}
 import akka.actor.Actor.Receive
-import org.codingteam.icfpc2017.{HandlerLoop, LogbackLogger, Strategy, TcpInterface}
+import org.codingteam.icfpc2017.{HandlerLoop, LogbackLogger, Strategy}
+import org.codingteam.icfpc2017.{HandlerLoop, Strategy, StreamParser}
 
 object RunLoopActor {
 
@@ -20,7 +21,7 @@ class RunLoopActor(host: String, port: Int, name: String, strategy: Strategy) ex
   override def receive: Receive = {
     case "loop" =>
       try {
-        HandlerLoop(loggerName).runLoop(TcpInterface.connect(host, port, loggerName), strategy, name, offline = false)
+        HandlerLoop(loggerName).runLoop(StreamParser.connect(host, port, loggerName), strategy, name, offline = true)
       } catch {
         case ex: Exception =>
           logger.trace("Exception", ex)

@@ -1,7 +1,6 @@
 package org.codingteam.icfpc2017
 
-import org.codingteam.icfpc2017.GameMap.{Mine, Site}
-import java.time.{Clock, Instant}
+import java.time.Instant
 
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.onlinegamer.OneBotOnServerGamer
@@ -50,6 +49,13 @@ object AppEntry extends App with LogbackLogger {
 
       case Array("--tcp-with-log", host, Parsing.I(port), name) =>
         runTcpLoop(host, port, Some(s"logs/game-${Instant.now().toEpochMilli}.lson"), name)
+
+      case Array("--offline") =>
+        runOfflineLoop(None, "codingpunter")
+
+      case Array("--offline-with-log", name) =>
+        runOfflineLoop(Some(s"logs/game-${Instant.now().toEpochMilli}.lson"), "codingpunter")
+
       case _ =>
         logger.info("Hello!")
     }
@@ -58,7 +64,12 @@ object AppEntry extends App with LogbackLogger {
 
   def runTcpLoop(host: String, port: Int, log: Option[String], name: String): Unit = {
     val strategy = selectStrategy(name)
-    HandlerLoop(log).runLoop(TcpInterface.connect(host, port, log), strategy, name, offline = false)
+    HandlerLoop(log).runLoop(StreamParser.connect(host, port, log), strategy, name, offline = false)
+  }
+
+  def runOfflineLoop(log: Option[String], name: String): Unit = {
+    val strategy = selectStrategy(name)
+    HandlerLoop(log).runOfflineMove(StreamParser.connectToStdInOut(log), strategy, name)
   }
 
   def selectStrategy(name: String): Strategy = {
@@ -66,8 +77,10 @@ object AppEntry extends App with LogbackLogger {
       case "codingpunter-dumb-obstructor" => new DelegatingStrategy(Seq(new DumbObstructorStrategy()))
       case "random-codingpunter" => new DelegatingStrategy(Seq(new RandomConnectorStrategy()))
       case "codingpunter" => new DelegatingStrategy(Seq(new GreedyStrategy()))
+      case "connector" => new DelegatingStrategy(Seq(new ComponentConnectorStrategy()))
       case "mixed" => new MixedStrategy(Seq(
-        (10.0, new GreedyStrategy()),
+        (2.0, new GreedyStrategy()),
+        (1.0, new ComponentConnectorStrategy()),
         (1.0, new DumbObstructorStrategy()),
         (1.0, new RandomConnectorStrategy())))
       case _ =>

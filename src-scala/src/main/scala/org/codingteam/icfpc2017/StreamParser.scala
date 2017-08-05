@@ -8,16 +8,14 @@ import org.json4s.jackson.JsonMethods
 
 
 /**
-  * TCP handler.
+  * Parser of low-level messages in i/o streams.
   */
-class TcpInterface private(socket: Socket, logFileName: Option[String]) extends StreamInterface with LogbackLogger {
-
-  // TODO: copy this impl to generic handler.
+class StreamParser private(streams: SocketLike, logFileName: Option[String]) extends StreamInterface with LogbackLogger {
 
   override def loggerName: Option[String] = logFileName
 
   override def readFromServer(): JValue = {
-    val is = socket.getInputStream
+    val is = streams.inputStream
 
     def readByte(): Char = {
       val b = is.read()
@@ -66,7 +64,7 @@ class TcpInterface private(socket: Socket, logFileName: Option[String]) extends 
   }
 
   override def writeToServer(data: JValue): Unit = {
-    val os = socket.getOutputStream
+    val os = streams.outputStream
     val writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"), 1024 * 1024)
     val str = JsonMethods.pretty(data)
     writer
@@ -79,12 +77,17 @@ class TcpInterface private(socket: Socket, logFileName: Option[String]) extends 
     writer.flush()
   }
 
-  override def close(): Unit = socket.close()
+  override def close(): Unit = streams.close()
 }
 
-object TcpInterface {
-  def connect(server: String, port: Int, log: Option[String]): TcpInterface = {
+object StreamParser {
+  def connect(server: String, port: Int, log: Option[String]): StreamParser = {
     val socket = new Socket(server, port)
-    new TcpInterface(socket, log)
+    new StreamParser(SocketLike.fromSocket(socket), log)
   }
+
+  def connectToStdInOut(log: Option[String]): StreamParser = {
+    new StreamParser(SocketLike.fromStdInOut(), log)
+  }
+
 }
