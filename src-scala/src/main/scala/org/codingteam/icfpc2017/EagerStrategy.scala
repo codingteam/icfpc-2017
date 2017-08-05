@@ -1,10 +1,13 @@
 package org.codingteam.icfpc2017
 
 import org.codingteam.icfpc2017.Common.Punter
+import org.codingteam.icfpc2017.GameMap.Node
 import org.codingteam.icfpc2017.Messages.{Claim, Move}
 import org.json4s.JsonAST.{JNothing, JValue}
 
 import scala.util.Random
+import scalax.collection.edge.LUnDiEdge
+import scalax.collection.mutable.Graph
 
 class EagerStrategy extends Strategy {
 
@@ -29,7 +32,7 @@ class EagerStrategy extends Strategy {
       var best = neighbours.toIndexedSeq(0)
       var score = 0
       for (edge <- neighbours) {
-        var hypothesis = graph.copy()
+        var hypothesis = GraphMap(Graph.from(graph.graph.nodes, graph.graph.edges))
         hypothesis.mark(edge._1.value, edge._2.value, me)
         val newScore = hypothesis.score(me)
         println("Adding " + edge.toString() + " will give us a score of " + newScore + " (" + (newScore-score) + ")")
