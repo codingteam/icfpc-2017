@@ -89,7 +89,7 @@ object Messages {
     }
   }
 
-  object Claim {
+  object IsClaim {
     def unapply(json: JValue): Option[Claim] = {
       for {
         claim <- (json \ "claim").toOption
@@ -143,7 +143,7 @@ object Messages {
   def parseMove(json: JValue): Option[Move] = {
     json match {
       case Pass(pass) => Some(pass)
-      case Claim(claim) => Some(claim)
+      case IsClaim(claim) => Some(claim)
       case _ => None
     }
   }
