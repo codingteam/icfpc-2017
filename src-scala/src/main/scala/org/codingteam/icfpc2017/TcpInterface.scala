@@ -40,8 +40,12 @@ class TcpInterface private(socket: Socket) extends StreamInterface {
     }
 
     val n = getSize()
-    var array: Array[Byte] = new Array[Byte](n)
-    is.read(array)
+    val array: Array[Byte] = new Array[Byte](n)
+    var alreadyRead = 0
+    while (alreadyRead < n) {
+      alreadyRead += is.read(array, alreadyRead, n - alreadyRead)
+    }
+
     val input = {
       val reader = new InputStreamReader(new ByteArrayInputStream(array), "UTF-8")
       val sb = new java.lang.StringBuilder
