@@ -153,6 +153,7 @@ function onmessage(message) {
             graph = { "nodes": msg.map.sites,
                       "edges": msg.map.rivers,
                       "mines": msg.map.mines };
+            $('#color').css({ background: getPunterColour(punterID) });
             logInfo("rendering game graph...");
             renderGraph(msg.map);
         } else if (msg.move !== undefined) {
