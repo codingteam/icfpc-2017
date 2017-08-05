@@ -125,7 +125,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
   }
 
   def getPunterNeighbours(punter : Punter) : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
-    val punterEdges = getPunterEdges(punter)
+    val punterEdges = getPunterEdges(punter).toSet
     val free = getFreeEdges
     if (punterEdges.isEmpty) {
       List()
@@ -134,10 +134,13 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
       punterEdges.foreach({edge : Graph[Node, LUnDiEdge]#EdgeT =>
         edge.nodes.foreach({node : Graph[Node, LUnDiEdge]#NodeT =>
           node.edges.foreach({neighbour : Graph[Node, LUnDiEdge]#EdgeT =>
-            result += neighbour
+            if (! punterEdges.contains(neighbour)) {
+              result += neighbour
+            }
           })
         })
       })
+      println(s"Neighbours: $punterEdges -> $result")
       result
     }
   }

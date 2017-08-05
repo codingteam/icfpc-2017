@@ -52,6 +52,7 @@ class EagerStrategy extends Strategy {
         case GameMap.Mine(id) => GameMap.Site(id)
       }
 
+      println(s"Our expected score: $score")
       Messages.Claim(me, from, to)
     }
   }
