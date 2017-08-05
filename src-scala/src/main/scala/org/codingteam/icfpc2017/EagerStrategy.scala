@@ -21,8 +21,10 @@ class EagerStrategy extends Strategy {
   }
 
   override def nextMove(): Move = {
-    println("Graph: " + graph.graph.toString())
     var neighbours = graph.getPunterNeighbours(me)
+    if (neighbours.isEmpty) {
+      neighbours = graph.getFreeNearMines()
+    }
     if (neighbours.isEmpty) {
       neighbours = graph.getFreeEdges()
     }
@@ -35,7 +37,6 @@ class EagerStrategy extends Strategy {
         var hypothesis = GraphMap(Graph.from(graph.graph.nodes, graph.graph.edges))
         hypothesis.mark(edge._1.value, edge._2.value, me)
         val newScore = hypothesis.score(me)
-        println("Adding " + edge.toString() + " will give us a score of " + newScore + " (" + (newScore-score) + ")")
         if (newScore > score) {
           score = newScore
           best = edge
