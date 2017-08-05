@@ -1,5 +1,6 @@
 package org.codingteam.icfpc2017
 
+import org.codingteam.icfpc2017.GameMap.{Site,Mine}
 import org.codingteam.icfpc2017.Common.Punter
 
 object AppEntry extends App {
@@ -33,6 +34,7 @@ object AppEntry extends App {
         println(map)
         println(map.getFreeEdges())
         println(map.getPunterSubgraph(Punter(666)))
+        println(map.punterDistance(Punter(666), Mine(1), Site(0)))
 
       case Array("--tcp", host, Parsing.I(port)) =>
         runTcpLoop(host, port)

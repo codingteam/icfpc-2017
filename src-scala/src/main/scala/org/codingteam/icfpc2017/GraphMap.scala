@@ -75,6 +75,10 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     })
     GraphMap(newGraph)
   }
+
+  def punterDistance(punter : Punter, source: Node, target: Node) : Int = {
+    getPunterSubgraph(punter).distance(source, target)
+  }
 }
 
 object GraphMap {
