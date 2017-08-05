@@ -63,6 +63,7 @@ class TcpInterface private(socket: Socket, logFileName: Option[String]) extends 
           write(input)
           close()
         }
+      case None => ()
     }
 
     import org.json4s._

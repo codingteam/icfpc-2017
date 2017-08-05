@@ -122,13 +122,17 @@ object Messages {
     }
   }
 
-  case class Stop(moves: List[Move], scores: List[Score]) extends Message
+  case class Stop(moves: List[Move], scores: List[Score]) extends Message {
+    def getScore(punter : Punter): Int = {
+      scores.map({s => (s.punter.id, s.score)}).toMap.get(punter.id).getOrElse(0)
+    }
+  }
 
   object Stop {
     def unapply(json: JValue): Option[Stop] = {
       hasKey(json, "stop") toOption {
         // FIXME
-        Stop(List(), List())
+        json.extract[Stop]
       }
     }
   }

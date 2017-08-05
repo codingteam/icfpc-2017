@@ -33,15 +33,18 @@ object HandlerLoop {
       while (true) {
         val request = server.readFromServer()
 
-        val (moves) = Messages.parseServerMessageJson(request) match {
+        val response = Messages.parseServerMessageJson(request) match {
           case Some(move: MoveRq) => {
-            (move.moves)
+            strategy.updateState(move.moves)
+            strategy.nextMove()
           }
-          case _ => (List[Messages.Move]())
+          case Some(stop : Stop) => {
+            println("Our score: " + stop.getScore(me))
+            Pass(me)
+          }
+          case _ => Pass(me)
         }
-        strategy.updateState(moves)
-        val myMove = strategy.nextMove()
-        server.writeToServer(myMove.toJson())
+        server.writeToServer(response.toJson())
       }
 
     } catch {
