@@ -34,8 +34,7 @@ object AppEntry extends App {
         println(map)
         println(map.getFreeEdges())
         println(map.getPunterSubgraph(Punter(666)))
-        println(map.punterDistance(Punter(666), Mine(1), Site(0)))
-        println(map.test())
+        println(map.score(Punter(666)))
 
       case Array("--tcp", host, Parsing.I(port)) =>
         runTcpLoop(host, port)

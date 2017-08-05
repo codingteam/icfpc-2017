@@ -53,12 +53,16 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
 
   def distance(source: Node, target: Node): Int = {
     val g = graph
-    val sourceNode = g get source
-    val targetNode = g get target
+    if ((g.nodes.contains(source)) && (g.nodes.contains(target))) {
+      val sourceNode = g get source
+      val targetNode = g get target
 
-    (sourceNode shortestPathTo targetNode) match {
-      case None => 0
-      case Some(path) => path.edges.size
+      (sourceNode shortestPathTo targetNode) match {
+        case None => 0
+        case Some(path) => path.edges.size
+      }
+    } else {
+      0
     }
   }
 
@@ -66,6 +70,14 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     graph.edges.filter {
       edge: Graph[Node, LUnDiEdge]#EdgeT => edge.label == None
     }
+  }
+
+  def getFreeSubgraph() : GraphMap = {
+    val g = graph
+    val newGraph = g filter g.having(edge = {
+      edge: g.EdgeT => edge.label == None
+    })
+    GraphMap(newGraph)
   }
 
   def getPunterSubgraph(punter : Punter) : GraphMap = {
@@ -78,6 +90,22 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
 
   def punterDistance(punter : Punter, source: Node, target: Node) : Int = {
     getPunterSubgraph(punter).distance(source, target)
+  }
+
+  def scoreMineSite(punter : Punter, mine : Node, site : Node) : Int = {
+    punterDistance(punter, mine, site)
+  }
+
+  def scoreMine(punter: Punter, mine: Node): Int = {
+    getSiteNodes.map({
+      node: Graph[Node, LUnDiEdge]#NodeT => scoreMineSite(punter, mine, node.value)
+    }).sum
+  }
+
+  def score(punter : Punter) : Int = {
+    getMineNodes.map({
+      node: Graph[Node, LUnDiEdge]#NodeT => scoreMine(punter, node.value)
+    }).sum
   }
 
   def test(): Unit = {
