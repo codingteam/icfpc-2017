@@ -24,6 +24,7 @@ class ComponentConnectorStrategy extends Strategy {
     graph = GraphMap.fromMap(map)
   }
 
+
   override def nextMove(): Move = {
     var candidates = graph.getFreeNearMines()
     if (candidates.isEmpty) {
@@ -35,10 +36,10 @@ class ComponentConnectorStrategy extends Strategy {
         for (c <- subgraph.componentTraverser())
           yield c.nodes
       ).toSeq
-      println(s"Found components: ${components.size}")
+      /*println(s"Found components: ${components.size}")
       for (c <- components) {
         println(c)
-      }
+      }*/
       if (components.size > 1) {
         val component1Idx = rng.nextInt(components.size)
         val component2Idx = (component1Idx + 1) % components.size
@@ -113,7 +114,23 @@ class ComponentConnectorStrategy extends Strategy {
 
 
   override def goodMoveProbability(): Double = {
-    1
+    val g = graph.graph
+    val subgraph = g filter g.having(edge = {
+      edge: g.EdgeT => (edge.label != None) && (edge.label == me)
+    })
+    val components = (
+      for (c <- subgraph.componentTraverser())
+        yield c.nodes
+      ).toSeq
+    if (components.size > 1) {
+      println(s"Found components: ${components.size}")
+      /*for (c <- components) {
+        println(c)
+      }*/
+      2
+    } else {
+      0.5
+    }
   }
 
   def state: JValue = JNothing

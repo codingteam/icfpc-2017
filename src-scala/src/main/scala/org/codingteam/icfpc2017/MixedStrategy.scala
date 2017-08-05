@@ -49,6 +49,7 @@ class MixedStrategy(val strategies: Seq[(Double, Strategy)]) extends Strategy {
     for (s <- ps) {
       probability -= s._2/W
       if (probability <= 0) {
+        println(s"Mixed: Selected strategy: ${s._1}")
         return s._1.nextMove()
       }
     }

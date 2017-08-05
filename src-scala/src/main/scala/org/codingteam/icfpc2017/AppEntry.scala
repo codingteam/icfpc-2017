@@ -69,7 +69,8 @@ object AppEntry extends App {
       case "codingpunter" => new DelegatingStrategy(Seq(new GreedyStrategy()))
       case "connector" => new DelegatingStrategy(Seq(new ComponentConnectorStrategy()))
       case "mixed" => new MixedStrategy(Seq(
-        (10.0, new GreedyStrategy()),
+        (2.0, new GreedyStrategy()),
+        (1.0, new ComponentConnectorStrategy()),
         (1.0, new DumbObstructorStrategy()),
         (1.0, new RandomConnectorStrategy())))
       case _ => throw new Exception("unsupported name: " + name)
