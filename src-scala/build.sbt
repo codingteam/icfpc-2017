@@ -16,3 +16,6 @@ libraryDependencies += "org.scala-graph" %% "graph-core" % "1.11.5"
 
 libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.5.3"
 
+scalacOptions += "-opt:l:classpath"
+
+scalacOptions += "-deprecation"
