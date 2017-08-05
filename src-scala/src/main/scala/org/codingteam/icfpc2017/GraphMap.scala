@@ -118,7 +118,8 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
   }
 
   def scoreMineSite(punter : Punter, mine : Node, site : Node) : Int = {
-    punterDistance(punter, mine, site)
+    val d = punterDistance(punter, mine, site)
+    d * d
   }
 
   def scoreMine(punter: Punter, mine: Node): Int = {
