@@ -30,6 +30,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
 
   def mark(source: Node, target: Node, punter: Punter): Unit = {
     val g = graph
+    println(s"mark: $source $target $punter")
     val sourceNode = g get source
     val targetNode = g get target
     assert(sourceNode.hasSuccessor(targetNode))
@@ -79,6 +80,30 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     })
     GraphMap(newGraph)
   }
+
+  def getPunterEdges(punter : Punter) : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+    val g = graph
+    g.edges.filter {
+      edge: g.EdgeT => (edge.label != None) && (edge.label == punter)
+    }
+  }
+
+  def getPunterNeighbours(punter : Punter) : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+    val punterEdges = getPunterEdges(punter)
+    val free = getFreeEdges
+    if (punterEdges.isEmpty) {
+      free
+    } else {
+      val punterNodes = punterEdges.flatMap({
+        edge: Graph[Node, LUnDiEdge]#EdgeT => edge.nodes
+      }).toSet
+      val g = graph
+      free.filterNot {
+        edge: Graph[Node, LUnDiEdge]#EdgeT => edge.nodes.toSet.intersect(punterNodes).isEmpty
+      }
+    }
+  }
+
 
   def getPunterSubgraph(punter : Punter) : GraphMap = {
     val g = graph

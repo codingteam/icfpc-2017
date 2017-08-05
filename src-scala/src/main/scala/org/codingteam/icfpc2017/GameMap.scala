@@ -51,7 +51,9 @@ object GameMap {
     var siteMap = sites.map(site => (site.id, siteToNode(site))).toMap
 
     def siteToNode(site: Site): Node = {
-      if (mines.contains(site.id)) {
+      val isMine = mines.contains(site.id)
+      println(s"siteToNode: $site ${this.mines} ${isMine}")
+      if (isMine) {
         Mine(site.id)
       } else {
         site

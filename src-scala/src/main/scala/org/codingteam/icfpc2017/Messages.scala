@@ -114,25 +114,40 @@ object Messages {
     }
   }
 
-  case class Score(punter: Punter, score: Int) extends Message
+  case class Score(punter: Punter, score: BigInt) extends Message
 
   object Score {
     def unapply(json: JValue): Option[Score] = {
-      hasKey(json, "score") toOption json.extract[Score]
+      for {
+        JInt(punter) <- (json \ "punter").toOption
+        JInt(score) <- (json \ "score").toOption
+      } yield Score(Punter(punter), score)
     }
   }
 
   case class Stop(moves: List[Move], scores: List[Score]) extends Message {
-    def getScore(punter : Punter): Int = {
+    def getScore(punter : Punter): BigInt = {
       scores.map({s => (s.punter.id, s.score)}).toMap.get(punter.id).getOrElse(0)
     }
   }
 
   object Stop {
+    def getScoresList(json: JValue): List[Score] = {
+      (json \ "stop" \ "scores").toOption match {
+        case None => List()
+        case Some(JArray(scores)) =>
+          //println(scores)
+          scores.map {
+              case Score(score) => score
+          }
+        case _ => List()
+      }
+    }
+
     def unapply(json: JValue): Option[Stop] = {
       hasKey(json, "stop") toOption {
         // FIXME
-        json.extract[Stop]
+        Stop(List(), getScoresList(json))
       }
     }
   }

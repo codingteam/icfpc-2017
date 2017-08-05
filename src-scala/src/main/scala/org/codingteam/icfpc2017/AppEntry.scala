@@ -1,6 +1,6 @@
 package org.codingteam.icfpc2017
 
-import org.codingteam.icfpc2017.GameMap.{Site,Mine}
+import org.codingteam.icfpc2017.GameMap.{Mine, Site}
 import java.time.{Clock, Instant}
 
 import org.codingteam.icfpc2017.Common.Punter
@@ -55,7 +55,7 @@ object AppEntry extends App {
 
   // TODO: implement real strategy.
 
-  lazy val strategy = new DelegatingStrategy(Seq(new RandomWalkerStrategy()))
+  lazy val strategy = new DelegatingStrategy(Seq(new RandomConnectorStrategy()))
 
   run()
 }
