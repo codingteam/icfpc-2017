@@ -4,6 +4,7 @@ import org.codingteam.icfpc2017.GameMap.{Mine, Site}
 import java.time.{Clock, Instant}
 
 import org.codingteam.icfpc2017.Common.Punter
+import org.codingteam.icfpc2017.onlinegamer.OneBotOnServerGamer
 
 object AppEntry extends App {
 
@@ -40,6 +41,10 @@ object AppEntry extends App {
 
       case Array("--tcp", host, Parsing.I(port)) =>
         runTcpLoop(host, port, None, "codingpunter")
+
+      case Array("--online-gamer", name, maps) =>
+        val mapz = maps.split(',').toList
+        new OneBotOnServerGamer().run(mapz, name)
 
       case Array("--tcp-with-log", host, Parsing.I(port), name) =>
         runTcpLoop(host, port, Some(s"logs/game-${Instant.now().toEpochMilli}.lson"), name)
