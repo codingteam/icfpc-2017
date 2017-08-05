@@ -55,7 +55,7 @@ object AppEntry extends App {
 
   // TODO: implement real strategy.
 
-  lazy val strategy = new DelegatingStrategy(Seq(new RandomConnectorStrategy()))
+  lazy val strategy = new DelegatingStrategy(Seq(new EagerStrategy()))
 
   run()
 }
