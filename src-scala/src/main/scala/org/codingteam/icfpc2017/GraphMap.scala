@@ -30,7 +30,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
 
   def mark(source: Node, target: Node, punter: Punter): Unit = {
     val g = graph
-    println(s"mark: $source $target $punter")
+    //println(s"mark: $source $target $punter")
     val sourceNode = g get source
     val targetNode = g get target
     assert(sourceNode.hasSuccessor(targetNode))
