@@ -43,6 +43,12 @@ svg {
   width: 100%;
 }
 
+#color {
+  height: 40px;
+  min-width: 60px;
+  border: 1px solid black;
+}
+
 #cy {
   position: relative;
   width: 1000px;
