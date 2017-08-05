@@ -1,3 +1,4 @@
+import com.github.retronym.SbtOneJar._
 
 name := "codingteam-icfpc2017"
 
@@ -8,6 +9,8 @@ scalaVersion := "2.12.2"
 mainClass in(Compile, run) := Some("org.codingteam.icfpc2017.AppEntry")
 
 fork := true
+
+oneJarSettings
 
 libraryDependencies += "org.scala-graph" %% "graph-core" % "1.11.5"
 
