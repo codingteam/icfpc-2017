@@ -3,7 +3,7 @@ package org.codingteam.icfpc2017
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.GameMap._
 
-import scala.collection.mutable.{Map => MMap}
+import scala.collection.mutable.{Map => MMap, Set => MSet}
 import scalax.collection.edge.LUnDiEdge
 import scalax.collection.mutable.Graph
 import scalax.collection.edge.LBase.LEdgeImplicits
@@ -130,13 +130,15 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     if (punterEdges.isEmpty) {
       List()
     } else {
-      val punterNodes = punterEdges.flatMap({
-        edge: Graph[Node, LUnDiEdge]#EdgeT => edge.nodes
-      }).toSet
-      val g = graph
-      free.filterNot {
-        edge: Graph[Node, LUnDiEdge]#EdgeT => edge.nodes.toSet.intersect(punterNodes).isEmpty
-      }
+      val result : MSet[Graph[Node, LUnDiEdge]#EdgeT] = MSet()
+      punterEdges.foreach({edge : Graph[Node, LUnDiEdge]#EdgeT =>
+        edge.nodes.foreach({node : Graph[Node, LUnDiEdge]#NodeT =>
+          node.edges.foreach({neighbour : Graph[Node, LUnDiEdge]#EdgeT =>
+            result += neighbour
+          })
+        })
+      })
+      result
     }
   }
 
