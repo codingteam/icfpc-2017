@@ -14,27 +14,14 @@
       <div class="row">
         <div class="col-md-4">
           <fieldset>
-            <legend>Connection settings</legend>
-            <table class="settings-table">
-              <tr>
-                <td>Game port:</td>
-                <td><input type="text" id="gamePort" value="9001" size="24" /></td>
-              </tr>
-              <tr>
-                <td>Punter name:</td>
-                <td><input type="text" id="punterName" value="lambda punter" size="24" /></td>
-              </tr>
-              <tr>
-                <td colspan="2">
-                  <button class="btn" id="connect" onclick="_connect();" disabled>
-                    Connect
-                  </button>
-                  <button class="btn" id="disconnect" onclick="_disconnect();" disabled>
-                    Disconnect
-                  </button>
-                </td>
-              </tr>
-            </table>
+            <legend>JSON logs:</legend>
+            <textarea id="logs"></textarea>
+            <button class="btn" onclick="_load();">
+                Load
+            </button>
+            <button class="btn" id="next" onclick="_next();" disabled>
+                Next
+            </button>
           </fieldset>
         </div>
         <div class="col-md-8">
