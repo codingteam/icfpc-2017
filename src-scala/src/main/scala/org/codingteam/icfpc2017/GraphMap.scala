@@ -1,8 +1,10 @@
 package org.codingteam.icfpc2017
 
 import org.codingteam.icfpc2017.GameMap._
+import org.codingteam.icfpc2017.Common.Punter
 
-import scalax.collection.Graph
+import scalax.collection.mutable.Graph
+import scalax.collection.mutable.EdgeOps
 import scalax.collection.GraphEdge._
 import scalax.collection.edge.LUnDiEdge
 import scalax.collection.edge.LBase.LEdgeImplicits
@@ -27,6 +29,16 @@ case class GraphMap(var graph : Graph[Node, LUnDiEdge]) {
   def getSiteNodes() : Iterable[Graph[Node, LUnDiEdge]#NodeT] = {
     graph.nodes.filter {
       node : Graph[Node, LUnDiEdge]#NodeT => node.value.isInstanceOf[Site]
+    }
+  }
+
+  def mark(source : SiteId, target : SiteId, punter : Punter) : Unit = {
+    val edges = graph.edges.toList
+    edges.foreach {
+      edge : Graph[Node, LUnDiEdge]#EdgeT =>
+        if (edge == LUnDiEdge(source,target)(None)) {
+          print("hello")
+        }
     }
   }
 }

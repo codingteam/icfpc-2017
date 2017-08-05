@@ -7,7 +7,7 @@ import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization
 
 import scala.io.Source
-import scalax.collection.Graph
+import scalax.collection.mutable.Graph
 import scalax.collection.GraphEdge._
 import scalax.collection.edge.LUnDiEdge
 import scalax.collection.edge.LBase.LEdgeImplicits
