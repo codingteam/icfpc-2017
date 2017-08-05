@@ -91,6 +91,7 @@ object Messages {
 
   object IsClaim {
     def unapply(json: JValue): Option[Claim] = {
+      println("Imma inside unapply x JValue")
       for {
         claim <- (json \ "claim").toOption
         JInt(id) <- (claim \ "punter").toOption
@@ -98,7 +99,10 @@ object Messages {
         JInt(target) <- (claim \ "target").toOption
       } yield Claim(Punter(id), Site(source), Site(target))
     }
-    def unapply(x: Any): Option[(Punter, Site, Site)] = Claim.unapply(x)
+    def unapply(x: Any): Option[(Punter, Site, Site)] = {
+      println("Imma inside unapply x Any")
+      Claim.unapply(x)
+    }
   }
 
   case class Pass(punter: Punter) extends Move {
