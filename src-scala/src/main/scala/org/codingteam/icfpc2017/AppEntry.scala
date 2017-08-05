@@ -39,23 +39,32 @@ object AppEntry extends App {
         println(map.score(Punter(666)))
 
       case Array("--tcp", host, Parsing.I(port)) =>
-        runTcpLoop(host, port, None)
+        runTcpLoop(host, port, None, "codingpunter")
 
-      case Array("--tcp-with-log", host, Parsing.I(port)) =>
-        runTcpLoop(host, port, Some(s"logs/game-${Instant.now().toEpochMilli}.lson"))
+      case Array("--tcp-with-log", host, Parsing.I(port), name) =>
+        runTcpLoop(host, port, Some(s"logs/game-${Instant.now().toEpochMilli}.lson"), name)
       case _ =>
         println("Hello!")
     }
 
   }
 
-  def runTcpLoop(host: String, port: Int, log: Option[String]): Unit = {
-    HandlerLoop.runLoop(TcpInterface.connect(host, port, log), strategy, offline = false)
+  def runTcpLoop(host: String, port: Int, log: Option[String], name: String): Unit = {
+    val strategy = selectStrategy(name)
+    HandlerLoop.runLoop(TcpInterface.connect(host, port, log), strategy, name, offline = false)
   }
 
   // TODO: implement real strategy.
+  def selectStrategy(name: String) : Strategy = {
+    name match {
+      case "codingpunter-dumb-obstructor" => new DelegatingStrategy(Seq(new DumbObstructorStrategy()))
+      case "random-codingpunter" => new DelegatingStrategy(Seq(new RandomConnectorStrategy()))
+      case "codingpunter" => new DelegatingStrategy(Seq(new GreedyStrategy()))
+      case _ => throw new Exception("unsupported name: " + name)
+    }
+  }
 
-  lazy val strategy = new DelegatingStrategy(Seq(new GreedyStrategy()))
+  // lazy val strategy = new DelegatingStrategy(Seq(new GreedyStrategy()))
 
   run()
 }

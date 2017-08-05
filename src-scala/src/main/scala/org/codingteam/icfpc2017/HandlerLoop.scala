@@ -10,9 +10,9 @@ import org.codingteam.icfpc2017.Common.Punter
   */
 object HandlerLoop {
 
-  def runLoop(server: StreamInterface, strategy: Strategy, offline: Boolean): Unit = {
+  def runLoop(server: StreamInterface, strategy: Strategy, name : String, offline: Boolean): Unit = {
     try {
-      val hello = HelloRq(Config.MyPunterName)
+      val hello = HelloRq(name)
       val helloJson = hello.toJson()
       server.writeToServer(helloJson)
       // ignoring the response - nothing interesting there
