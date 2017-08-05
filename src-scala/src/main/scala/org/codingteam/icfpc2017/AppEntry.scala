@@ -32,6 +32,7 @@ object AppEntry extends App {
         map.mark(n1.value, n2.value, Punter(666))
         println(map)
         println(map.getFreeEdges())
+        println(map.getPunterSubgraph(Punter(666)))
 
       case Array("--tcp", host, Parsing.I(port)) =>
         runTcpLoop(host, port)

@@ -5,8 +5,12 @@ import org.codingteam.icfpc2017.GameMap._
 
 import scalax.collection.edge.LUnDiEdge
 import scalax.collection.mutable.Graph
+import scalax.collection.edge.LBase.LEdgeImplicits
 
 case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
+
+  object PunterImplicit extends LEdgeImplicits[Option[Punter]]
+  import PunterImplicit._
 
   def getNodes: Iterable[Node] = graph.nodes
 
@@ -47,10 +51,29 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     graph -= edge
   }
 
+  def distance(source: Node, target: Node): Int = {
+    val g = graph
+    val sourceNode = g get source
+    val targetNode = g get target
+
+    (sourceNode shortestPathTo targetNode) match {
+      case None => 0
+      case Some(path) => path.edges.size
+    }
+  }
+
   def getFreeEdges() : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
     graph.edges.filter {
       edge: Graph[Node, LUnDiEdge]#EdgeT => edge.label == None
     }
+  }
+
+  def getPunterSubgraph(punter : Punter) : GraphMap = {
+    val g = graph
+    val newGraph = g filter g.having(edge = {
+      edge: g.EdgeT => (edge.label != None) && (edge.label == punter)
+    })
+    GraphMap(newGraph)
   }
 }
 
