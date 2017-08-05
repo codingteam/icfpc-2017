@@ -36,9 +36,12 @@ class ComponentConnectorStrategy extends Strategy {
           yield c.nodes
       ).toSeq
       println(s"Found components: ${components.size}")
+      for (c <- components) {
+        println(c)
+      }
       if (components.size > 1) {
-        val component1Idx = rng.nextInt(candidates.size)
-        val component2Idx = rng.nextInt(candidates.size)
+        val component1Idx = rng.nextInt(components.size)
+        val component2Idx = (component1Idx + 1) % components.size
         val component1 = components(component1Idx)
         val component2 = components(component2Idx)
         var bestNodes = (component1.toIndexedSeq(0).value, component2.toIndexedSeq(0).value)
@@ -59,8 +62,11 @@ class ComponentConnectorStrategy extends Strategy {
         (node1 shortestPathTo node2) match {
           case None =>
           case Some(path) => {
-            println(s"Found path: $path")
+            println(s"Found path: $node1 - $node2 :: $path")
+            //val edge1 = (g find LUnDiEdge(node1.value, path.nodes.head.value)(me)).get
+            //val edge2 = (g find LUnDiEdge(path.nodes.last.value, node2.value)(me)).get
             candidates = List(path.edges.head, path.edges.last)
+            //candidates = List(edge1, edge2)
           }
         }
       }
