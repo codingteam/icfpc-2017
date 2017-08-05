@@ -27,7 +27,7 @@ object AppEntry extends App {
   }
 
   def runTcpLoop(host: String, port: Int): Unit = {
-    HandlerLoop.runLoop(TcpInterface.connect(host, port), strategy)
+    HandlerLoop.runLoop(TcpInterface.connect(host, port), strategy, offline = false)
   }
 
   // TODO: implement real strategy.

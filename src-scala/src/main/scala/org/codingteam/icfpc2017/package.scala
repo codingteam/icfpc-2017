@@ -1,6 +1,6 @@
 package org.codingteam
 
-import org.codingteam.icfpc2017.Messages.Move
+import org.codingteam.icfpc2017.Messages.{Move, Punter}
 import org.json4s.JsonAST.JValue
 
 package object icfpc2017 {
@@ -10,11 +10,17 @@ package object icfpc2017 {
     */
   trait Strategy {
 
-    private var _map: GameMap.Map = _
+    private var _map: GameMap.Map = GameMap.Map.createEmpty
 
     def map: GameMap.Map = _map
 
-    def setMap(map: GameMap.Map): Unit = _map = map
+    def map_=(map: GameMap.Map): Unit = _map = map
+
+    private var _me: Punter = Punter(0)
+
+    def me = _me
+
+    def me_=(punter: Punter) = _me = punter
 
     def nextMove(): Move
 
@@ -29,7 +35,21 @@ package object icfpc2017 {
       */
     def goodMoveProbability(): Double
 
-    // TODO: save/restore state methods.
+    /**
+      * Serialize state to JValue.
+      * NOTE: you should remember that json is slow.
+      *
+      * @return state.
+      */
+    def state: JValue
+
+    /**
+      * Import state from JValue.
+      * NOTE: you should remember that json is slow.
+      *
+      * @param s state.
+      */
+    def state_=(s: JValue)
   }
 
   /**
@@ -61,4 +81,9 @@ package object icfpc2017 {
   object Config {
     val MyPunterName = "codingpunter"
   }
+
+  implicit class BooleanExt(val b: Boolean) extends AnyVal {
+    def toOption[T](v: => T): Option[T] = if (b) Some(v) else None
+  }
+
 }

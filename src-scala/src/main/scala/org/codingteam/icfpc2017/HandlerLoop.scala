@@ -9,7 +9,7 @@ import org.codingteam.icfpc2017.Messages.{HelloRq, Punter, SetupRq}
   */
 object HandlerLoop {
 
-  def runLoop(server: StreamInterface, strategy: Strategy): Unit = {
+  def runLoop(server: StreamInterface, strategy: Strategy, offline: Boolean): Unit = {
     try {
       val hello = HelloRq(Config.MyPunterName)
       val helloJson = hello.toJson()
@@ -17,25 +17,24 @@ object HandlerLoop {
       // ignoring the response - nothing interesting there
       val helloResponse = server.readFromServer()
       val setupRequest = server.readFromServer()
-      var punter: Punter = new Punter(0)
-      var map: GameMap.Map =
-        new GameMap.Map(List[GameMap.Site](),
-          List[GameMap.River](),
-          List[GameMap.SiteId]())
-      var n: BigInt = 0
-      Messages.parseServerMessageJson(setupRequest) match {
+
+      val (me, map, n) = Messages.parseServerMessageJson(setupRequest) match {
         case Some(setup: SetupRq) => {
-          punter = new Punter(setup.punter)
-          map = setup.map
-          n = setup.punters
+          val punter = Punter(setup.punter)
+          val map = setup.map
+          val n = setup.punters
           println("Our punter id is " + setup.punter + " and there's " + n + " punters in total")
+          (punter, map, n)
         }
-        case default => ()
+        case _ => (Punter(0), GameMap.Map.createEmpty, 0)
       }
+      strategy.me = me
+      strategy.map = map
       while (true) {
         val request = server.readFromServer()
 
         // val moves = <read moves>
+        // < update map >
         // strategy.updateState(moves)
         // val myMove = strategy.nextMove()
         // server.write( <myMove as json> )

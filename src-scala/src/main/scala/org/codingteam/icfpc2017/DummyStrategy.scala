@@ -1,6 +1,7 @@
 package org.codingteam.icfpc2017
 
 import org.codingteam.icfpc2017.Messages.{Move, Pass, Punter}
+import org.json4s.JsonAST.{JObject, JValue}
 
 /**
   * Стратегия-заглушка. Нужна только для успешного запуска.
@@ -13,4 +14,8 @@ class DummyStrategy extends Strategy {
   override def updateState(moves: Seq[Move]): Unit = {}
 
   override def goodMoveProbability(): Double = 0.01
+
+  override def state: JValue = JObject()
+
+  override def state_=(s: JValue): Unit = {}
 }

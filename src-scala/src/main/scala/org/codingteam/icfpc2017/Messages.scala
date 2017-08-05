@@ -23,7 +23,7 @@ object Messages {
 
   case class HelloRq(punter: String) extends Message with Serializable {
     def toJson(): JObject = {
-      return ("me" -> punter)
+      "me" -> punter
     }
   }
 
@@ -41,17 +41,13 @@ object Messages {
 
   object SetupRq {
     def unapply(json: JValue): Option[SetupRq] = {
-      if (hasKey(json, "punter")) {
-        return Some(json.extract[SetupRq])
-      } else {
-        return None
-      }
+      hasKey(json, "punter") toOption json.extract[SetupRq]
     }
   }
 
   case class SetupRs(punter: Punter) extends Message with Serializable {
     def toJson(): JObject = {
-      return ("ready" -> punter.name)
+      "ready" -> punter.name
     }
   }
 
@@ -59,7 +55,7 @@ object Messages {
 
   object Move {
     def unapply(json: JValue): Option[Move] = {
-      return parseMove(json)
+      parseMove(json)
     }
   }
 
@@ -72,27 +68,24 @@ object Messages {
         case Some(JArray(moves)) =>
           //println(moves)
           for {move <- moves} yield parseMove(move).get
-        case default => List()
+        case _ => List()
       }
     }
 
     def unapply(json: JValue): Option[MoveRq] = {
-      if (hasKey(json, "move")) {
+      hasKey(json, "move") toOption {
         val moves = getMovesList(json)
-        return Some(MoveRq(moves))
-      } else {
-        return None
+        MoveRq(moves)
       }
     }
   }
 
   case class Claim(punter: Punter, source: Site, target: Site) extends Move {
     def toJson(): JObject = {
-      return ("claim" ->
+      "claim" ->
         ("punter" -> punter.name) ~
           ("source" -> source.id) ~
           ("target" -> target.id)
-        )
     }
   }
 
@@ -110,7 +103,7 @@ object Messages {
 
   case class Pass(punter: Punter) extends Move {
     def toJson(): JObject = {
-      return ("pass" -> ("punter" -> punter.name))
+      "pass" -> ("punter" -> punter.name)
     }
   }
 
@@ -122,67 +115,59 @@ object Messages {
     }
   }
 
-  case class Score(punter : Punter, score: Int) extends Message
+  case class Score(punter: Punter, score: Int) extends Message
 
   object Score {
-    def unapply(json : JValue) : Option[Score] = {
-      if (hasKey(json, "score")) {
-        return Some(json.extract[Score])
-      } else {
-        return None
-      }
+    def unapply(json: JValue): Option[Score] = {
+      hasKey(json, "score") toOption json.extract[Score]
     }
   }
 
-  case class Stop(moves : List[Move], scores : List[Score]) extends Message
+  case class Stop(moves: List[Move], scores: List[Score]) extends Message
 
   object Stop {
-    def unapply(json : JValue) : Option[Stop] = {
-      if (hasKey(json, "stop")) {
+    def unapply(json: JValue): Option[Stop] = {
+      hasKey(json, "stop") toOption {
         // FIXME
-        return Some(Stop(List(), List()))
-      } else {
-        return None
+        Stop(List(), List())
       }
     }
   }
 
   def hasKey(json: JValue, key: String): Boolean = {
-    if ((json \ key) != JNothing) {
-      return true
-    } else {
-      return false
-    }
+    val v = json \ key
+    // TODO: JNull check ?
+    v != JNothing
   }
 
   def parseMove(json: JValue): Option[Move] = {
     json match {
-      case Pass(pass: Pass) => Some(pass)
-      case Claim(claim: Claim) => Some(claim)
-      case default => None
+      case Pass(pass) => Some(pass)
+      case Claim(claim) => Some(claim)
+      case _ => None
     }
   }
 
   def parseMoveStr(str: String): Option[Move] = {
-    return parseMove(parse(str))
+    parseMove(parse(str))
   }
 
   def parseServerMessageJson(json: JValue): Option[Message] = {
     json match {
-      case HelloRs(hello: HelloRs) => Some(hello)
-      case SetupRq(setup: SetupRq) => Some(setup)
-      case MoveRq(move: MoveRq) => Some(move)
-      case Stop(stop : Stop) => Some(stop)
-      case default => None
+      case HelloRs(hello) => Some(hello)
+      case SetupRq(setup) => Some(setup)
+      case MoveRq(move) => Some(move)
+      case Stop(stop) => Some(stop)
+      case _ => None
     }
   }
 
   def parseServerMessageStr(str: String): Option[Message] = {
-    return parseServerMessageJson(parse(str))
+    parseServerMessageJson(parse(str))
   }
 
   def parseServerMessageFile(path: String): Option[Message] = {
     val source = Source.fromFile(path)
-    return parseServerMessageJson(parse(source.reader()))
+    parseServerMessageJson(parse(source.reader()))
   }
 }

@@ -4,11 +4,9 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization
 
-import scalax.collection.Graph
-import scalax.collection.GraphPredef._
-import scalax.collection.GraphEdge._
-
 import scala.io.Source
+import scalax.collection.Graph
+import scalax.collection.GraphEdge._
 
 object GameMap {
 
@@ -17,7 +15,7 @@ object GameMap {
   case class Site(id: SiteId)
 
   case class River(source: SiteId, target: SiteId) {
-    def toEdge(map : Map) : UnDiEdge[Site] = {
+    def toEdge(map: Map): UnDiEdge[Site] = {
       return UnDiEdge(map.siteMap.get(source).get, map.siteMap.get(target).get)
     }
   }
@@ -33,9 +31,13 @@ object GameMap {
       val source = Source.fromFile(path)
       return parse(source.reader()).extract[Map]
     }
+
+    def createEmpty = new Map(IndexedSeq(), IndexedSeq(), IndexedSeq())
   }
 
-  class Map(var sites: List[Site], var rivers: List[River], var mines: List[SiteId]) {
+  class Map(var sites: IndexedSeq[Site],
+            var rivers: IndexedSeq[River],
+            var mines: IndexedSeq[SiteId]) {
 
     var siteMap = sites.map(site => (site.id, site)).toMap
 

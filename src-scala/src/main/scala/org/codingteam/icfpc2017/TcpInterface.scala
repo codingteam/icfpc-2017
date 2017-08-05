@@ -41,8 +41,17 @@ class TcpInterface private(socket: Socket) extends StreamInterface {
 
     val n = getSize()
     var array: Array[Byte] = new Array[Byte](n)
-    is.read(array, 0, n)
-    val input = new String(array)
+    is.read(array)
+    val input = {
+      val reader = new InputStreamReader(new ByteArrayInputStream(array), "UTF-8")
+      val sb = new java.lang.StringBuilder
+      var c = reader.read()
+      while (c != -1) {
+        sb.append(c.toChar)
+        c = reader.read()
+      }
+      sb.toString
+    }
     println("<-  " + input)
     import org.json4s._
     JsonMethods.parse(input)
