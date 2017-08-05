@@ -3,6 +3,7 @@ package org.codingteam.icfpc2017
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.GameMap._
 
+import scala.collection.mutable.{Map => MMap}
 import scalax.collection.edge.LUnDiEdge
 import scalax.collection.mutable.Graph
 import scalax.collection.edge.LBase.LEdgeImplicits
@@ -52,7 +53,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     graph -= edge
   }
 
-  def distance(source: Node, target: Node): Int = {
+  def distanceUncached(source: Node, target: Node): Int = {
     val g = graph
     assert(! g.isEmpty)
     if (source == target) {
@@ -69,6 +70,20 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
         }
       } else {
         0
+      }
+    }
+  }
+
+  private var distanceCache : MMap[(Node,Node), Int] = MMap.empty
+
+  def distance(source: Node, target: Node): Int = {
+    distanceCache.get((source, target)) match {
+      case Some(d) => d
+      case None => {
+        val d = distanceUncached(source, target)
+        //println(s"Cache miss: distance($source, $target) = $d")
+        distanceCache.put((source,target), d)
+        d
       }
     }
   }
@@ -147,8 +162,8 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     getPunterSubgraph(punter).distance(source, target)
   }
 
-  def scoreMineSite(punter : Punter, mine : Node, site : Node) : Int = {
-    if (getPunterSubgraph(punter).hasPath(mine, site)) {
+  def scoreMineSite(punter : Punter, subgraph: GraphMap, mine : Node, site : Node) : Int = {
+    if (subgraph.hasPath(mine, site)) {
       val d = distance(mine, site)
       d * d
     } else {
@@ -156,16 +171,17 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     }
   }
 
-  def scoreMine(punter: Punter, mine: Node): Int = {
+  def scoreMine(punter: Punter, subgraph: GraphMap, mine: Node): Int = {
     val g = graph
     g.nodes.map({
-      node: Graph[Node, LUnDiEdge]#NodeT => scoreMineSite(punter, mine, node.value)
+      node: Graph[Node, LUnDiEdge]#NodeT => scoreMineSite(punter, subgraph, mine, node.value)
     }).sum
   }
 
   def score(punter : Punter) : Int = {
+    val subgraph = getPunterSubgraph(punter)
     getMineNodes.map({
-      node: Graph[Node, LUnDiEdge]#NodeT => scoreMine(punter, node.value)
+      node: Graph[Node, LUnDiEdge]#NodeT => scoreMine(punter, subgraph, node.value)
     }).sum
   }
 
