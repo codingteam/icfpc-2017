@@ -13,3 +13,6 @@ libraryDependencies += "org.scala-graph" %% "graph-core" % "1.11.5"
 
 libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.5.3"
 
+libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.5.3"
+
+libraryDependencies += "net.ruippeixotog" %% "scala-scraper" % "2.0.0"
