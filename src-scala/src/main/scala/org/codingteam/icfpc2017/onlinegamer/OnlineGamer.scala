@@ -33,15 +33,19 @@ class MainActor(maps: List[(StatsMap, Strategy)], name: String) extends Actor {
     case "start" =>
       println(s"Running for maps: ${maps}")
 
-      maps.foreach {
-        case (map, strategy) =>
-          val loopActor = context.actorOf(RunLoopActor.props(OnlineGamer.SERVER_HOST, map.port, name, strategy))
+      if(maps.isEmpty) {
+        context.system.terminate()
+      } else {
+        maps.foreach {
+          case (map, strategy) =>
+            val loopActor = context.actorOf(RunLoopActor.props(OnlineGamer.SERVER_HOST, map.port, name, strategy))
 
-          runningLoops += map.port
+            runningLoops += map.port
 
-          println(s"Running loop: ${map.port}; $runningLoops")
+            println(s"Running loop: ${map.port}; $runningLoops")
 
-          loopActor ! "loop"
+            loopActor ! "loop"
+        }
       }
 
     case LoopStop(port) =>
