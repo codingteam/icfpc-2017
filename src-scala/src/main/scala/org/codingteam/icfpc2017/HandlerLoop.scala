@@ -2,7 +2,7 @@ package org.codingteam.icfpc2017
 
 import java.io.EOFException
 
-import org.codingteam.icfpc2017.Messages.{HelloRq, SetupRq}
+import org.codingteam.icfpc2017.Messages._
 import org.codingteam.icfpc2017.Common.Punter
 
 /**
@@ -25,6 +25,8 @@ object HandlerLoop {
           val map = setup.map
           val n = setup.punters
           println("Our punter id is " + setup.punter + " and there's " + n + " punters in total")
+          val rs = SetupRs(punter)
+          server.writeToServer(rs.toJson())
           (punter, map, n)
         }
         case _ => (Punter(0), GameMap.Map.createEmpty, 0)
@@ -33,6 +35,8 @@ object HandlerLoop {
       strategy.map = map
       while (true) {
         val request = server.readFromServer()
+        val response = Pass(Punter(0))
+        server.writeToServer(response.toJson())
 
         // val moves = <read moves>
         // < update map >
