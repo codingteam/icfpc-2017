@@ -43,6 +43,7 @@ class RandomWalkerStrategy extends Strategy {
         val targetNode = map.siteToNode(target)
         graph.removeEdge(sourceNode, targetNode)
       }
+      case _ =>
     }
   }
 
