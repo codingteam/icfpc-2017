@@ -15,7 +15,7 @@ object AppEntry extends App {
         val map = GraphMap.fromMap(m)
         println(map)
         println(map.getMineNodes)
-        // println(map.toGraph())
+      // println(map.toGraph())
 
       case Array("--test-move-parse") =>
         //val moveStr = """{"claim":{"punter":0,"source":0,"target":1}}"""
@@ -46,6 +46,9 @@ object AppEntry extends App {
         val mapz = maps.split(',').toList
         new OneBotOnServerGamer().run(mapz, name)
 
+      case Array("--tcp-with-strategy", host, Parsing.I(port), strategy) =>
+        runTcpLoop(host, port, None, strategy)
+
       case Array("--tcp-with-log", host, Parsing.I(port), name) =>
         runTcpLoop(host, port, Some(s"logs/game-${Instant.now().toEpochMilli}.lson"), name)
       case _ =>
@@ -59,12 +62,15 @@ object AppEntry extends App {
     HandlerLoop.runLoop(TcpInterface.connect(host, port, log), strategy, name, offline = false)
   }
 
-  // TODO: implement real strategy.
-  def selectStrategy(name: String) : Strategy = {
+  def selectStrategy(name: String): Strategy = {
     name match {
       case "codingpunter-dumb-obstructor" => new DelegatingStrategy(Seq(new DumbObstructorStrategy()))
       case "random-codingpunter" => new DelegatingStrategy(Seq(new RandomConnectorStrategy()))
       case "codingpunter" => new DelegatingStrategy(Seq(new GreedyStrategy()))
+      case "mixed" => new MixedStrategy(Seq(
+        (10.0, new GreedyStrategy()),
+        (1.0, new DumbObstructorStrategy()),
+        (1.0, new RandomConnectorStrategy())))
       case _ => throw new Exception("unsupported name: " + name)
     }
   }
