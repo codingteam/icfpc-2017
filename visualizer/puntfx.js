@@ -166,10 +166,10 @@ function onmessage(message) {
         }
     } catch (e) { // other message from the server
         console.log(e);
-        if (message.data.constructor == String) {
+        if (message && message.data && message.data.constructor == String) {
             logRelay(message.data);
         } else {
-            logError("received unknown message from relay.");
+            logError("received unknown message: " + message);
         }
     }
     return;
