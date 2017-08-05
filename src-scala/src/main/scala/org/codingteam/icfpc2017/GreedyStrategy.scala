@@ -9,7 +9,7 @@ import scala.util.Random
 import scalax.collection.edge.LUnDiEdge
 import scalax.collection.mutable.Graph
 
-class EagerStrategy extends Strategy {
+class GreedyStrategy extends Strategy {
 
   private var graph: GraphMap = GraphMap.fromMap(GameMap.Map.createEmpty)
 
