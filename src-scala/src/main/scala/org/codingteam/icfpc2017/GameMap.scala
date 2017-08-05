@@ -51,7 +51,7 @@ object GameMap {
 
     def siteToNode(site: Site): Node = {
       val isMine = mines.contains(site.id)
-      println(s"siteToNode: $site ${this.mines} ${isMine}")
+      //println(s"siteToNode: $site ${this.mines} ${isMine}")
       if (isMine) {
         Mine(site.id)
       } else {
