@@ -54,6 +54,9 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
 
   def distance(source: Node, target: Node): Int = {
     val g = graph
+    assert(source != target)
+    assert(! g.isEmpty)
+    println(s"Distance from $source to $target, graph: $g")
     if ((g.nodes.contains(source)) && (g.nodes.contains(target))) {
       val sourceNode = g get source
       val targetNode = g get target
@@ -64,6 +67,21 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
       }
     } else {
       0
+    }
+  }
+
+  def hasPath(source: Node, target: Node) : Boolean = {
+    val g = graph
+    if ((g.nodes.contains(source)) && (g.nodes.contains(target))) {
+      val sourceNode = g get source
+      val targetNode = g get target
+
+      (sourceNode pathTo targetNode) match {
+        case None => false
+        case _ => true
+      }
+    } else {
+      false
     }
   }
 
@@ -118,8 +136,12 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
   }
 
   def scoreMineSite(punter : Punter, mine : Node, site : Node) : Int = {
-    val d = punterDistance(punter, mine, site)
-    d * d
+    if (getPunterSubgraph(punter).hasPath(mine, site)) {
+      val d = distance(mine, site)
+      d * d
+    } else {
+      0
+    }
   }
 
   def scoreMine(punter: Punter, mine: Node): Int = {
