@@ -3,8 +3,7 @@ package org.codingteam.icfpc2017.onlinegamer
 import java.time.Instant
 
 import akka.actor.{Actor, Props}
-import akka.actor.Actor.Receive
-import org.codingteam.icfpc2017.{HandlerLoop, Strategy, TcpInterface}
+import org.codingteam.icfpc2017.{HandlerLoop, Strategy, StreamParser}
 
 object RunLoopActor {
 
@@ -18,7 +17,7 @@ class RunLoopActor(host: String, port: Int, name: String, strategy: Strategy) ex
   override def receive: Receive = {
     case "loop" =>
       try {
-        HandlerLoop.runLoop(TcpInterface.connect(host, port, Some(s"logs/online-gamer-${Instant.now().toEpochMilli}.lson")), strategy, name, offline = false)
+        HandlerLoop.runLoop(StreamParser.connect(host, port, Some(s"logs/online-gamer-${Instant.now().toEpochMilli}.lson")), strategy, name)
       } catch {
         case ex: Exception =>
           ex.printStackTrace()

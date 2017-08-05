@@ -1,7 +1,6 @@
 package org.codingteam.icfpc2017
 
-import org.codingteam.icfpc2017.GameMap.{Mine, Site}
-import java.time.{Clock, Instant}
+import java.time.Instant
 
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.onlinegamer.OneBotOnServerGamer
@@ -51,6 +50,13 @@ object AppEntry extends App {
 
       case Array("--tcp-with-log", host, Parsing.I(port), name) =>
         runTcpLoop(host, port, Some(s"logs/game-${Instant.now().toEpochMilli}.lson"), name)
+
+      case Array("--offline") =>
+        runOfflineLoop(None, "codingpunter")
+
+      case Array("--offline-with-log", name) =>
+        runOfflineLoop(Some(s"logs/game-${Instant.now().toEpochMilli}.lson"), "codingpunter")
+
       case _ =>
         println("Hello!")
     }
@@ -59,7 +65,12 @@ object AppEntry extends App {
 
   def runTcpLoop(host: String, port: Int, log: Option[String], name: String): Unit = {
     val strategy = selectStrategy(name)
-    HandlerLoop.runLoop(TcpInterface.connect(host, port, log), strategy, name, offline = false)
+    HandlerLoop.runLoop(StreamParser.connect(host, port, log), strategy, name)
+  }
+
+  def runOfflineLoop(log: Option[String], name: String): Unit = {
+    val strategy = selectStrategy(name)
+    HandlerLoop.runOfflineMove(StreamParser.connectToStdInOut(log), strategy, name)
   }
 
   def selectStrategy(name: String): Strategy = {
