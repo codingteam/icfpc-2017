@@ -140,7 +140,7 @@ function logRelay(msg) {
 
 function onmessage(message) {
     try {
-        let msg = JSON.parse(message.data.split(/:(.+)/)[1]);
+        let msg = JSON.parse(message);
         // Initial message
         if (msg.map !== undefined) {
             // Record our ID, and the number of punters
@@ -162,12 +162,12 @@ function onmessage(message) {
             printFinalScores(msg.stop.scores);
             $('#next').prop('disabled', true);
         } else {
-            logError("unknown JSON message: " + message.data);
+            logError("unknown JSON message: " + message);
         }
     } catch (e) { // other message from the server
         console.log(e);
-        if (message && message.data && message.data.constructor == String) {
-            logRelay(message.data);
+        if (message && message.constructor == String) {
+            logRelay(message);
         } else {
             logError("received unknown message: " + message);
         }

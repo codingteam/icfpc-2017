@@ -38,6 +38,11 @@ svg {
   width: 90%;
 }
 
+#logs {
+  min-height: 150px;
+  width: 100%;
+}
+
 #cy {
   position: relative;
   width: 1000px;
