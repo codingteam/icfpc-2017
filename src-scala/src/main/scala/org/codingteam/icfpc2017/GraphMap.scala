@@ -92,7 +92,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     val punterEdges = getPunterEdges(punter)
     val free = getFreeEdges
     if (punterEdges.isEmpty) {
-      free
+      List()
     } else {
       val punterNodes = punterEdges.flatMap({
         edge: Graph[Node, LUnDiEdge]#EdgeT => edge.nodes
@@ -101,6 +101,15 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
       free.filterNot {
         edge: Graph[Node, LUnDiEdge]#EdgeT => edge.nodes.toSet.intersect(punterNodes).isEmpty
       }
+    }
+  }
+
+  def getFreeNearMines() : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+    val free = getFreeEdges
+    val mines = getMineNodes.toSet
+
+    free.filterNot {
+      edge: Graph[Node, LUnDiEdge]#EdgeT => edge.nodes.toSet.intersect(mines).isEmpty
     }
   }
 

@@ -20,12 +20,19 @@ class RandomConnectorStrategy extends Strategy {
   }
 
   override def nextMove(): Move = {
-    val freeEdges = graph.getPunterNeighbours(me)
-    if (freeEdges.isEmpty) {
+    val neighbours = graph.getPunterNeighbours(me)
+    val candidates =
+      if (neighbours.isEmpty) {
+        graph.getFreeNearMines()
+      } else {
+        neighbours
+      }
+
+    if (candidates.isEmpty) {
       Pass(me)
     } else {
-      val index = rng.nextInt(freeEdges.size)
-      val edge = freeEdges.toIndexedSeq(index)
+      val index = rng.nextInt(candidates.size)
+      val edge = candidates.toIndexedSeq(index)
 
       val from = edge._1.value match {
         case x@GameMap.Site(id) => x
