@@ -98,7 +98,7 @@ object Messages {
         JInt(target) <- (claim \ "target").toOption
       } yield Claim(Punter(id), Site(source), Site(target))
     }
-
+    def unapply(x: Any): Option[(Punter, Site, Site)] = Claim.unapply(x)
   }
 
   case class Pass(punter: Punter) extends Move {
