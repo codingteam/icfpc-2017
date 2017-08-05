@@ -36,6 +36,12 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     implicit val factory = scalax.collection.edge.LDiEdge
     graph.addLEdge(source, target)(punter)
   }
+
+  def getFreeEdges() : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+    graph.edges.filter {
+      edge: Graph[Node, LUnDiEdge]#EdgeT => edge.label == None
+    }
+  }
 }
 
 object GraphMap {
