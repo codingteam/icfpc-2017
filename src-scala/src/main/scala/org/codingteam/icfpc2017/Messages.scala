@@ -98,7 +98,6 @@ object Messages {
         JInt(target) <- (claim \ "target").toOption
       } yield Claim(Punter(id), Site(source), Site(target))
     }
-
   }
 
   case class Pass(punter: Punter) extends Move {

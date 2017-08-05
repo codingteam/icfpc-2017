@@ -50,7 +50,7 @@ object AppEntry extends App {
 
   // TODO: implement real strategy.
 
-  lazy val strategy = new DelegatingStrategy(Seq(new DummyStrategy()))
+  lazy val strategy = new DelegatingStrategy(Seq(new RandomWalkerStrategy()))
 
   run()
 }
