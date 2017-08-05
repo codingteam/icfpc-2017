@@ -140,7 +140,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
           })
         })
       })
-      println(s"Neighbours: $punterEdges -> $result")
+      //println(s"Neighbours: $punterEdges -> $result")
       result
     }
   }
