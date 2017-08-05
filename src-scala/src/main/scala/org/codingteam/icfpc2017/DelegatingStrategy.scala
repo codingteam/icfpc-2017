@@ -1,7 +1,8 @@
 package org.codingteam.icfpc2017
 
 import org.codingteam.icfpc2017.GameMap.Map
-import org.codingteam.icfpc2017.Messages.{Move, Punter}
+import org.codingteam.icfpc2017.Messages.Move
+import org.codingteam.icfpc2017.Common.Punter
 import org.json4s.JsonAST.{JObject, JValue}
 
 import scala.util.Random

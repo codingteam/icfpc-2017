@@ -1,6 +1,7 @@
 package org.codingteam.icfpc2017
 
-import org.codingteam.icfpc2017.Messages.{Move, Pass, Punter}
+import org.codingteam.icfpc2017.Messages.{Move, Pass}
+import org.codingteam.icfpc2017.Common.Punter
 import org.json4s.JsonAST.{JObject, JValue}
 
 /**

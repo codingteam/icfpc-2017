@@ -2,7 +2,8 @@ package org.codingteam.icfpc2017
 
 import java.io.EOFException
 
-import org.codingteam.icfpc2017.Messages.{HelloRq, Punter, SetupRq}
+import org.codingteam.icfpc2017.Messages.{HelloRq, SetupRq}
+import org.codingteam.icfpc2017.Common.Punter
 
 /**
   * Message processing cycle.

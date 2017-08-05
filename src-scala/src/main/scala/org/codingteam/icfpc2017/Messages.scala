@@ -1,6 +1,7 @@
 package org.codingteam.icfpc2017
 
 import org.codingteam.icfpc2017.GameMap._
+import org.codingteam.icfpc2017.Common._
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
@@ -12,7 +13,6 @@ object Messages {
 
   implicit val formats = Serialization.formats(NoTypeHints)
 
-  case class Punter(name: BigInt)
 
   abstract class Message {
   }
@@ -47,7 +47,7 @@ object Messages {
 
   case class SetupRs(punter: Punter) extends Message with Serializable {
     def toJson(): JObject = {
-      "ready" -> punter.name
+      "ready" -> punter.id
     }
   }
 
@@ -83,7 +83,7 @@ object Messages {
   case class Claim(punter: Punter, source: Site, target: Site) extends Move {
     def toJson(): JObject = {
       "claim" ->
-        ("punter" -> punter.name) ~
+        ("punter" -> punter.id) ~
           ("source" -> source.id) ~
           ("target" -> target.id)
     }
@@ -93,25 +93,25 @@ object Messages {
     def unapply(json: JValue): Option[Claim] = {
       for {
         claim <- (json \ "claim").toOption
-        JInt(name) <- (claim \ "punter").toOption
+        JInt(id) <- (claim \ "punter").toOption
         JInt(source) <- (claim \ "source").toOption
         JInt(target) <- (claim \ "target").toOption
-      } yield Claim(Punter(name), Site(source), Site(target))
+      } yield Claim(Punter(id), Site(source), Site(target))
     }
 
   }
 
   case class Pass(punter: Punter) extends Move {
     def toJson(): JObject = {
-      "pass" -> ("punter" -> punter.name)
+      "pass" -> ("punter" -> punter.id)
     }
   }
 
   object Pass {
     def unapply(json: JValue): Option[Pass] = {
       for {
-        JInt(name) <- (json \ "pass" \ "punter").toOption
-      } yield Pass(Punter(name))
+        JInt(id) <- (json \ "pass" \ "punter").toOption
+      } yield Pass(Punter(id))
     }
   }
 
