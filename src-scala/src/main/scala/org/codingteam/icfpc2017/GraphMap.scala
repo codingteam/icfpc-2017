@@ -37,6 +37,16 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     graph.addLEdge(source, target)(punter)
   }
 
+  def removeEdge(source: Node, target: Node) : Unit = {
+    val g = graph
+    val sourceNode = g get source
+    val targetNode = g get target
+    assert(sourceNode.hasSuccessor(targetNode))
+
+    val edge = sourceNode.connectionsWith(targetNode).head
+    graph -= edge
+  }
+
   def getFreeEdges() : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
     graph.edges.filter {
       edge: Graph[Node, LUnDiEdge]#EdgeT => edge.label == None
