@@ -5,8 +5,11 @@ object AppEntry extends App {
   private def run(): Unit = {
     args match {
       case Array("--test-map", mapFilePath) =>
-        val map = GameMap.Map.fromJsonFile(mapFilePath)
-        println(map.toGraph())
+        val m = GameMap.Map.fromJsonFile(mapFilePath)
+        val map = GraphMap.fromMap(m)
+        println(map)
+        println(map.getMineNodes)
+        // println(map.toGraph())
 
       case Array("--test-move-parse") =>
         //val moveStr = """{"claim":{"punter":0,"source":0,"target":1}}"""
