@@ -124,25 +124,40 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     }
   }
 
-  def getPunterNeighbours(punter : Punter) : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
-    val punterEdges = getPunterEdges(punter).toSet
-    val free = getFreeEdges
-    if (punterEdges.isEmpty) {
+  def getForeignEdges(punter : Punter) : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+    val g = graph
+    g.edges.filter {
+      edge: g.EdgeT => (edge.label != None) && (edge.label != punter)
+    }
+  }
+
+  def getNeighbours(startEdges : Set[Graph[Node, LUnDiEdge]#EdgeT]) : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+    if (startEdges.isEmpty) {
       List()
     } else {
       val result : MSet[Graph[Node, LUnDiEdge]#EdgeT] = MSet()
-      punterEdges.foreach({edge : Graph[Node, LUnDiEdge]#EdgeT =>
+      startEdges.foreach({edge : Graph[Node, LUnDiEdge]#EdgeT =>
         edge.nodes.foreach({node : Graph[Node, LUnDiEdge]#NodeT =>
           node.edges.foreach({neighbour : Graph[Node, LUnDiEdge]#EdgeT =>
-            if (! punterEdges.contains(neighbour)) {
+            if (! startEdges.contains(neighbour)) {
               result += neighbour
             }
           })
         })
       })
-      //println(s"Neighbours: $punterEdges -> $result")
+      //println(s"Neighbours: $startEdges -> $result")
       result
     }
+  }
+
+  def getPunterNeighbours(punter : Punter) : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+    val punterEdges = getPunterEdges(punter).toSet
+    getNeighbours(punterEdges)
+  }
+
+  def getForeignNeighbours(punter : Punter) : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+    val foreignEdges = getForeignEdges(punter).toSet
+    getNeighbours(foreignEdges)
   }
 
   def getFreeNearMines() : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
