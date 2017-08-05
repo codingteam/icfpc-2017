@@ -22,12 +22,9 @@ object HandlerLoop {
       val (me, map, n) = Messages.parseServerMessageJson(setupRequest) match {
         case Some(setup: SetupRq) => {
           val punter = Punter(setup.punter)
-          val map = setup.map
-          val n = setup.punters
-          println("Our punter id is " + setup.punter + " and there's " + n + " punters in total")
           val rs = SetupRs(punter)
           server.writeToServer(rs.toJson())
-          (punter, map, n)
+          (punter, setup.map, setup.punters)
         }
         case _ => (Punter(0), GameMap.Map.createEmpty, 0)
       }
@@ -35,14 +32,16 @@ object HandlerLoop {
       strategy.map = map
       while (true) {
         val request = server.readFromServer()
-        val response = Pass(Punter(0))
-        server.writeToServer(response.toJson())
 
-        // val moves = <read moves>
-        // < update map >
-        // strategy.updateState(moves)
-        // val myMove = strategy.nextMove()
-        // server.write( <myMove as json> )
+        val (moves) = Messages.parseServerMessageJson(request) match {
+          case Some(move: MoveRq) => {
+            (move.moves)
+          }
+          case _ => (List[Messages.Move]())
+        }
+        strategy.updateState(moves)
+        val myMove = strategy.nextMove()
+        server.writeToServer(myMove.toJson())
       }
 
     } catch {
