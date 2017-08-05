@@ -47,7 +47,9 @@ class RandomConnectorStrategy extends Strategy {
       val targetNode = map.siteToNode(to)
       graph.mark(sourceNode, targetNode, me)
       val score = graph.score(me)
-      println(s"Our expected score: $score")
+      val our = graph.getPunterEdges(me).size
+      val total = graph.graph.edges.size
+      println(s"Our expected score: $score, our edges: $our, total edges: $total")
       Messages.Claim(me, from, to)
     }
   }
