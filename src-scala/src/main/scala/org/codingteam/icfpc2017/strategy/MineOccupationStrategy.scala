@@ -83,8 +83,8 @@ class MineOccupationStrategy extends Strategy {
       node: g.NodeT => node.value.isInstanceOf[Mine]
     }
 
-    var foundFreeMine = false
-    var foundUnderoccupiedMine = false
+    var freeMines = 0
+    var underoccupiedMines = 0
     // first, try to reach each mine at least once
     mineNodes.foreach({
       mineNode : g.NodeT => {
@@ -92,29 +92,30 @@ class MineOccupationStrategy extends Strategy {
         if (noMyEdges) {
           val freeEdges = mineNode.edges.filter(_.label == None)
           if (! freeEdges.isEmpty) {
-            foundFreeMine = true
+            //println(s"Free mine: $mineNode, edges: ${mineNode.edges}")
+            freeMines += 1
           }
         }
       }
     })
 
     // second, try to occupy all mines
-    if (! foundFreeMine) {
+    if (freeMines == 0) {
       mineNodes.foreach({
         mineNode : g.NodeT => {
           val freeEdges = mineNode.edges.filter(_.label == None)
           if (! freeEdges.isEmpty) {
-            foundUnderoccupiedMine = true
+            underoccupiedMines += 1
           }
         }
       })
     }
 
-    if (foundFreeMine) {
-      println("There is a totally free mine.")
+    if (freeMines > 0) {
+      println(s"There are totally free mines: $freeMines.")
       5.0
-    } else if (foundUnderoccupiedMine) {
-      println("There is a mine that is not occupied by us yet.")
+    } else if (underoccupiedMines > 0) {
+      println(s"There are mines that are not fully occupied by us yet: ${underoccupiedMines}.")
       0.5
     } else {
       println("All mines are already occupied.")
