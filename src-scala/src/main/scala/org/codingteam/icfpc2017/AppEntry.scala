@@ -5,7 +5,7 @@ import java.time.Instant
 
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.onlinegamer.OneBotOnServerGamer
-import org.codingteam.icfpc2017.strategy._
+import org.codingteam.icfpc2017.strategy.{FutureStrategy, _}
 
 object AppEntry extends App with Logging {
 
@@ -87,6 +87,7 @@ object AppEntry extends App with Logging {
       case "connector" => new DelegatingStrategy(Seq(new ComponentConnectorStrategy()))
       case "mixed" => new MixedStrategy(Seq(
         (2.0, new GreedyStrategy()),
+        (2.0, new FutureStrategy()),
         (1.0, new MineOccupationStrategy()),
         (1.0, new ComponentConnectorStrategy()),
         (1.0, new DumbObstructorStrategy()),
