@@ -16,6 +16,7 @@ class CommonState {
   var graph: GraphMap = GraphMap.fromMap(map)
 
   def init(map: GameMap.Map, punterId: BigInt, punterCount: Int): Unit = {
+    this.map = map
     graph = GraphMap fromMap map
     me = Punter(punterId)
     this.punterCount = punterCount
