@@ -8,6 +8,9 @@ import org.codingteam.icfpc2017.{GameMap, Messages}
 
 import scala.collection.mutable.{Map => MMap, Set => MSet}
 import scala.util.Random
+import scalax.collection.edge.LUnDiEdge
+import scalax.collection.mutable.Graph
+import scalax.collection.edge.LBase.LEdgeImplicits
 
 /**
   * Created by portnov on 8/5/17.
@@ -19,7 +22,7 @@ class ComponentConnectorStrategy extends Strategy {
   private var prevComponentsNumber: Option[Int] = None
   private var prevComponentIdx: Option[Int] = None
 
-  def getComponents(): Seq[Iterable[Node]] = {
+  def getComponents(): Seq[(Iterable[Node], Int)] = {
     val g = graph.graph
     val subgraph = g filter g.having(edge = {
       edge: g.EdgeT => (edge.label != None) && (edge.label == me)
@@ -27,9 +30,68 @@ class ComponentConnectorStrategy extends Strategy {
     val components =
       (for (c <- subgraph.componentTraverser())
         yield c.nodes.map(_.value)
-        ).toSeq
+        ).toSeq.zipWithIndex
     //println(s"Components: $components")
     components
+  }
+
+  def calcComponentsPath(freeSubgraph: Graph[Node, LUnDiEdge],
+                         component1: (Iterable[Node], Int),
+                         component2: (Iterable[Node], Int)): Option[Graph[Node, LUnDiEdge]#Path] = {
+
+    var selectedPair: Option[(Node, Node)] = None
+    var bestPath: Option[freeSubgraph.Path] = None
+    var bestRho = 1000500
+
+    component1._1.foreach({
+      node1: Node =>
+        component2._1.foreach({
+          node2: Node => {
+            val n1Opt = freeSubgraph find node1
+            val n2Opt = freeSubgraph find node2
+            (n1Opt, n2Opt) match {
+              case (Some(n1), Some(n2)) =>
+                (n1 shortestPathTo n2) match {
+                  case None => // println(s"No way: $n1 - $n2")
+                  case Some(path) =>
+                    if (path.length < bestRho) {
+                      bestPath = Some(path)
+                      bestRho = path.length
+                      selectedPair = Some(node1, node2)
+                      //println(s"Found better pair: $node1 - $node2 with distance $bestRho")
+                    }
+                }
+              case _ => // println(s"Nodes not in free subgraph: $node1 - $node2")
+            }
+          }
+        })
+    })
+
+    selectedPair match {
+      case None => {
+        println(s"Can not select a pair of nodes to connect components #${component1._2} - #${component2._2}")
+        None
+      }
+      case Some(bestNodes) =>
+        val node1Opt = freeSubgraph find bestNodes._1
+        val node2Opt = freeSubgraph find bestNodes._2
+        (node1Opt, node2Opt) match {
+          case (Some(node1), Some(node2)) =>
+            bestPath match {
+              case None => {
+                println(s"Both selected nodes $node1, $node2 belong to free subgraph, but there is no free way between them.")
+                None
+              }
+              case Some(path) => {
+                Some(path)
+              }
+            }
+          case _ => {
+            println(s"No ways to connect components #${component1._2} - #${component2._2} found, this is odd.")
+            None
+          }
+        }
+    }
   }
 
   override def nextMove(): Move = {
@@ -46,111 +108,68 @@ class ComponentConnectorStrategy extends Strategy {
     for (c <- components) {
       println(c)
     }*/
+
+    var bestPath : Option[Graph[Node, LUnDiEdge]#Path] = None
+    var bestRho = 1000500
+    var bestComponentIdxs: (Int,Int) = (0,0)
+
     if (componentsNumber > 1) {
+      for {component1 <- components
+           component2 <- components
+           if (component1._2 < component2._2)} {
 
-      // if number of components did not change since last move,
-      // we will proceed with the same component.
-      val component1Idx =
-      if (prevComponentsNumber == Some(componentsNumber)) {
-        prevComponentIdx match {
-          case None => rng.nextInt(componentsNumber)
-          case Some(n) => n
-        }
-      } else {
-        rng.nextInt(componentsNumber)
-      }
+        assert(!component1._1.isEmpty)
+        assert(!component1._1.isEmpty)
 
-      val component2Idx = (component1Idx + 1) % componentsNumber
-      println(s"Will try to connect components #$component1Idx and #$component2Idx.")
-      val component1 = components(component1Idx)
-      val component2 = components(component2Idx)
-
-      prevComponentsNumber = Some(componentsNumber)
-      prevComponentIdx = Some(component1Idx)
-
-      assert(!component1.isEmpty)
-      assert(!component1.isEmpty)
-
-      var selectedPair: Option[(Node, Node)] = None
-      var bestPath: Option[freeSubgraph.Path] = None
-      var bestRho = 1000500
-
-      component1.foreach({
-        node1: Node =>
-          component2.foreach({
-            node2: Node => {
-              val n1Opt = freeSubgraph find node1
-              val n2Opt = freeSubgraph find node2
-              (n1Opt, n2Opt) match {
-                case (Some(n1), Some(n2)) =>
-                  (n1 shortestPathTo n2) match {
-                    case None => // println(s"No way: $n1 - $n2")
-                    case Some(path) =>
-                      if (path.length < bestRho) {
-                        bestPath = Some(path)
-                        bestRho = path.length
-                        selectedPair = Some(node1, node2)
-                        //println(s"Found better pair: $node1 - $node2 with distance $bestRho")
-                      }
-                  }
-                case _ => // println(s"Nodes not in free subgraph: $node1 - $node2")
-              }
+        calcComponentsPath(freeSubgraph, component1, component2) match {
+          case None =>
+          case Some(path) => {
+            val d = path.length
+            if (d < bestRho) {
+              bestRho = d
+              bestPath = Some(path)
+              bestComponentIdxs = (component1._2, component2._2)
             }
-          })
-      })
-
-      selectedPair match {
-        case None => println("Can not select a pair of nodes that could be connected.")
-        case Some(bestNodes) =>
-          val node1Opt = freeSubgraph find bestNodes._1
-          val node2Opt = freeSubgraph find bestNodes._2
-          (node1Opt, node2Opt) match {
-            case (Some(node1), Some(node2)) =>
-              bestPath match {
-                case None => println(s"Both selected nodes $node1, $node2 belong to free subgraph, but there is no free way between them.")
-                case Some(path) => {
-                  println(s"Found path: $node1 - $node2 :: ${path.length}")
-                  if (path.length == 1) {
-                    println("Will connect two components.")
-                  }
-                  //val edge1 = (g find LUnDiEdge(node1.value, path.nodes.head.value)(me)).get
-                  //val edge2 = (g find LUnDiEdge(path.nodes.last.value, node2.value)(me)).get
-                  candidates = List(path.edges.head, path.edges.last)
-                  //candidates = List(edge1, edge2)
-                }
-              }
-            case _ => println("No ways to connect components found, this is odd.")
           }
+        }
       }
-    }
 
-    if (candidates.isEmpty) {
-      println("Component connector can not find good move")
-      // do not stuck with this
-      prevComponentIdx = None
+      bestPath match {
+        case None => {
+          println("Component connector can not find good move")
+          Pass(me)
+        }
+        case Some(path) => {
+          assert(!path.edges.isEmpty)
 
-      Pass(me)
+          println(s"Found path between components #${bestComponentIdxs}:  ${path.nodes.head} - ${path.nodes.last} :: ${path.length}")
+          if (path.length == 1) {
+            println("Will connect two components.")
+          }
+
+          val edge = path.edges.head
+          val from = edge._1.value match {
+            case x@GameMap.Site(id) => x
+            case GameMap.Mine(id) => GameMap.Site(id)
+          }
+          val to = edge._2.value match {
+            case x@GameMap.Site(id) => x
+            case GameMap.Mine(id) => GameMap.Site(id)
+          }
+
+          val sourceNode = map.siteToNode(from)
+          val targetNode = map.siteToNode(to)
+          graph.mark(sourceNode, targetNode, me)
+          val score = graph.score(me)
+          val our = graph.getPunterEdges(me).size
+          val total = graph.graph.edges.size
+          println(s"Our expected score: $score, our edges: $our, total edges: $total")
+          Messages.Claim(me, from, to)
+        }
+      }
     } else {
-      val index = rng.nextInt(candidates.size)
-      val edge = candidates.toIndexedSeq(index)
-
-      val from = edge._1.value match {
-        case x@GameMap.Site(id) => x
-        case GameMap.Mine(id) => GameMap.Site(id)
-      }
-      val to = edge._2.value match {
-        case x@GameMap.Site(id) => x
-        case GameMap.Mine(id) => GameMap.Site(id)
-      }
-
-      val sourceNode = map.siteToNode(from)
-      val targetNode = map.siteToNode(to)
-      graph.mark(sourceNode, targetNode, me)
-      val score = graph.score(me)
-      val our = graph.getPunterEdges(me).size
-      val total = graph.graph.edges.size
-      println(s"Our expected score: $score, our edges: $our, total edges: $total")
-      Messages.Claim(me, from, to)
+      println("There is only one component, nothing to connect.")
+      Pass(me)
     }
   }
 
