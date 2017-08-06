@@ -3,6 +3,7 @@ package org.codingteam.icfpc2017
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream}
 import java.util.Base64
 
+import org.codingteam.icfpc2017.Messages.Move
 import org.codingteam.icfpc2017.strategy.Strategy
 import org.json4s.JsonAST.{JString, JValue}
 
@@ -13,6 +14,11 @@ class FullState(val commonState: CommonState,
                 val strategy: Strategy) extends Logging {
   // "CT"
   val magic: Array[Byte] = Array[Byte](67, 84)
+
+  def updateState(moves: Seq[Move]): Unit = {
+    commonState.updateState(moves)
+    strategy.updateState(moves)
+  }
 
   def read(is: InputStream): Unit = {
     val correctMagic = magic.forall(_ == is.read().toByte)
