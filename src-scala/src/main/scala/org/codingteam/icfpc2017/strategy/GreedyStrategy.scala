@@ -1,9 +1,9 @@
 package org.codingteam.icfpc2017.strategy
 
-import java.io.{InputStream, OutputStream}
+import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Messages.{Claim, Move}
-import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap, Messages}
+import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap, Messages, SerializationUtils}
 
 import scala.util.Random
 import scalax.collection.mutable.Graph
@@ -80,7 +80,13 @@ class GreedyStrategy extends Strategy {
     1
   }
 
-  override def read(is: InputStream): Unit = {}
+  override def read(is: InputStream): Unit = {
+    val data = new DataInputStream(is)
+    SerializationUtils.readGraph(graph, data)
+  }
 
-  override def write(os: OutputStream): Unit = {}
+  override def write(os: OutputStream): Unit = {
+    val data = new DataOutputStream(os)
+    SerializationUtils.writeGraph(graph, data)
+  }
 }

@@ -1,6 +1,6 @@
 package org.codingteam.icfpc2017
 
-import java.io.{InputStream, OutputStream}
+import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.Messages.{Claim, Move}
@@ -31,11 +31,19 @@ class CommonState {
   }
 
   def read(is: InputStream): Unit = {
-
+    val data = new DataInputStream(is)
+    me = Punter(data.readLong())
+    punterCount = data.readInt()
+    map = SerializationUtils.readMap(data)
+    SerializationUtils.readGraph(graph, data)
   }
 
   def write(os: OutputStream): Unit = {
-
+    val data = new DataOutputStream(os)
+    data.writeLong(me.id.toLong)
+    data.writeInt(punterCount)
+    SerializationUtils.writeMap(map, data)
+    SerializationUtils.writeGraph(graph, data)
   }
 }
 

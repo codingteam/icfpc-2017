@@ -1,7 +1,9 @@
 package org.codingteam.icfpc2017.strategy
 
+import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
+
 import org.codingteam.icfpc2017.Messages.{Claim, Move}
-import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap, Messages}
+import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap, Messages, SerializationUtils}
 
 import scala.util.Random
 
@@ -53,4 +55,13 @@ class RandomWalkerStrategy extends Strategy {
     1 / graph.getFreeEdges().size
   }
 
+  override def read(is: InputStream): Unit = {
+    val data = new DataInputStream(is)
+    SerializationUtils.readGraph(graph, data)
+  }
+
+  override def write(os: OutputStream): Unit = {
+    val data = new DataOutputStream(os)
+    SerializationUtils.writeGraph(graph, data)
+  }
 }
