@@ -137,7 +137,10 @@ object SerializationUtils {
         if (edge.label == None) {
           -1
         } else {
-          edge.label.asInstanceOf[Some[Punter]] map (_.id.toInt) getOrElse -1
+          if (! edge.label.isInstanceOf[Punter]) {
+            throw new Exception(s"Invalid edge label: ${edge.label}")
+          }
+          edge.label.asInstanceOf[Punter].id.toInt
         }
       os.writeInt(punterId)
     }
@@ -163,7 +166,7 @@ object SerializationUtils {
       val n2 = sites(is.readInt())
       val punter = is.readInt() match {
         case -1 => None
-        case id => Some(Punter(id))
+        case id => Punter(id)
       }
       val edge = LUnDiEdge(n1, n2)(punter)
       graph.add(edge)
