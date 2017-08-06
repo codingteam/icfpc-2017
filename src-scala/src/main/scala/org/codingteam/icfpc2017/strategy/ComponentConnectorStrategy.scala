@@ -1,5 +1,7 @@
 package org.codingteam.icfpc2017.strategy
 
+import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
+
 import org.codingteam.icfpc2017.GameMap.Node
 import org.codingteam.icfpc2017.Messages.{Move, Pass}
 import org.codingteam.icfpc2017.{GameMap, Messages}
@@ -14,20 +16,20 @@ class ComponentConnectorStrategy extends Strategy {
 
   private var rng = Random
 
-  private var prevComponentsNumber : Option[Int] = None
-  private var prevComponentIdx : Option[Int] = None
+  private var prevComponentsNumber: Option[Int] = None
+  private var prevComponentIdx: Option[Int] = None
 
-  def getComponents() : Seq[Iterable[Node]] = {
-      val g = graph.graph
-      val subgraph = g filter g.having(edge = {
-        edge: g.EdgeT => (edge.label != None) && (edge.label == me)
-      })
-      val components =
-        (for (c <- subgraph.componentTraverser())
-          yield c.nodes.map(_.value)
+  def getComponents(): Seq[Iterable[Node]] = {
+    val g = graph.graph
+    val subgraph = g filter g.having(edge = {
+      edge: g.EdgeT => (edge.label != None) && (edge.label == me)
+    })
+    val components =
+      (for (c <- subgraph.componentTraverser())
+        yield c.nodes.map(_.value)
         ).toSeq
-      //println(s"Components: $components")
-      components
+    //println(s"Components: $components")
+    components
   }
 
   override def nextMove(): Move = {
@@ -49,14 +51,14 @@ class ComponentConnectorStrategy extends Strategy {
       // if number of components did not change since last move,
       // we will proceed with the same component.
       val component1Idx =
-        if (prevComponentsNumber == Some(componentsNumber)) {
-          prevComponentIdx match {
-            case None => rng.nextInt(componentsNumber)
-            case Some(n) => n
-          }
-        } else {
-          rng.nextInt(componentsNumber)
+      if (prevComponentsNumber == Some(componentsNumber)) {
+        prevComponentIdx match {
+          case None => rng.nextInt(componentsNumber)
+          case Some(n) => n
         }
+      } else {
+        rng.nextInt(componentsNumber)
+      }
 
       val component2Idx = (component1Idx + 1) % componentsNumber
       println(s"Will try to connect components #$component1Idx and #$component2Idx.")
@@ -66,34 +68,35 @@ class ComponentConnectorStrategy extends Strategy {
       prevComponentsNumber = Some(componentsNumber)
       prevComponentIdx = Some(component1Idx)
 
-      assert(! component1.isEmpty)
-      assert(! component1.isEmpty)
+      assert(!component1.isEmpty)
+      assert(!component1.isEmpty)
 
-      var selectedPair : Option[(Node,Node)] = None
-      var bestPath : Option[freeSubgraph.Path] = None
+      var selectedPair: Option[(Node, Node)] = None
+      var bestPath: Option[freeSubgraph.Path] = None
       var bestRho = 1000500
 
       component1.foreach({
-        node1: Node => component2.foreach({
-          node2: Node => {
-            val n1Opt = freeSubgraph find node1
-            val n2Opt = freeSubgraph find node2
-            (n1Opt, n2Opt) match {
-              case (Some(n1), Some(n2)) =>
-                (n1 shortestPathTo n2) match {
-                  case None => // println(s"No way: $n1 - $n2")
-                  case Some(path) =>
-                    if (path.length < bestRho) {
-                      bestPath = Some(path)
-                      bestRho = path.length
-                      selectedPair = Some (node1, node2)
-                      //println(s"Found better pair: $node1 - $node2 with distance $bestRho")
-                    }
-                }
-              case _ => // println(s"Nodes not in free subgraph: $node1 - $node2")
+        node1: Node =>
+          component2.foreach({
+            node2: Node => {
+              val n1Opt = freeSubgraph find node1
+              val n2Opt = freeSubgraph find node2
+              (n1Opt, n2Opt) match {
+                case (Some(n1), Some(n2)) =>
+                  (n1 shortestPathTo n2) match {
+                    case None => // println(s"No way: $n1 - $n2")
+                    case Some(path) =>
+                      if (path.length < bestRho) {
+                        bestPath = Some(path)
+                        bestRho = path.length
+                        selectedPair = Some(node1, node2)
+                        //println(s"Found better pair: $node1 - $node2 with distance $bestRho")
+                      }
+                  }
+                case _ => // println(s"Nodes not in free subgraph: $node1 - $node2")
+              }
             }
-          }
-        })
+          })
       })
 
       selectedPair match {
@@ -169,4 +172,22 @@ class ComponentConnectorStrategy extends Strategy {
   }
 
   override def updateState(moves: Seq[Move]): Unit = {}
+
+  override def read(is: InputStream): Unit = {
+    val data = new DataInputStream(is)
+    prevComponentIdx = data.readInt() match {
+      case -1 => None
+      case n => Some(n)
+    }
+    prevComponentsNumber = data.readInt() match {
+      case -1 => None
+      case n => Some(n)
+    }
+  }
+
+  override def write(os: OutputStream): Unit = {
+    val data = new DataOutputStream(os)
+    data.writeInt(prevComponentIdx getOrElse -1)
+    data.writeInt(prevComponentsNumber getOrElse -1)
+  }
 }
