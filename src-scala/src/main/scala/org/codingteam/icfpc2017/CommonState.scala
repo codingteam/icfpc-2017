@@ -38,9 +38,10 @@ class CommonState {
 
   def getFullfilledFutures(): Iterable[Future] = {
     // var result: Seq[Future] = Seq()
+    val subgraph = graph.getPunterSubgraph(me)
     if (futures.isDefined) {
       for {future <- futures.get
-           if (graph.hasPath(map.siteToNode(Site(future.sourceId)), map.siteToNode(Site(future.targetId))))
+           if (subgraph.hasPath(map.siteToNode(Site(future.sourceId)), map.siteToNode(Site(future.targetId))))
       } yield future
     } else {
       List()
