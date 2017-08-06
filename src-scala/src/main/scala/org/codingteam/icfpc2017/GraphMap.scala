@@ -34,7 +34,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
     //println(s"mark: $source $target $punter")
     val sourceNode = g get source
     val targetNode = g get target
-    assert(sourceNode.hasSuccessor(targetNode))
+    assert(sourceNode.hasSuccessor(targetNode), s"$sourceNode should have $targetNode successor")
 
     val edge = sourceNode.connectionsWith(targetNode).head
     graph -= edge
@@ -192,14 +192,14 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
 
   def scoreMine(punter: Punter, subgraph: GraphMap, mine: Node): Int = {
     val g = graph
-    g.nodes.map({
+    g.nodes.toSeq.map({
       node: Graph[Node, LUnDiEdge]#NodeT => scoreMineSite(punter, subgraph, mine, node.value)
     }).sum
   }
 
   def score(punter : Punter) : Int = {
     val subgraph = getPunterSubgraph(punter)
-    getMineNodes.map({
+    getMineNodes.toSeq.map({
       node: Graph[Node, LUnDiEdge]#NodeT => scoreMine(punter, subgraph, node.value)
     }).sum
   }

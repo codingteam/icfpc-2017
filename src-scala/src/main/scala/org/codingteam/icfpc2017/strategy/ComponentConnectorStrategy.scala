@@ -14,6 +14,9 @@ class ComponentConnectorStrategy extends Strategy {
 
   private var rng = Random
 
+  private var prevComponentsNumber : Option[Int] = None
+  private var prevComponentIdx : Option[Int] = None
+
   def getComponents() : Seq[Iterable[Node]] = {
       val g = graph.graph
       val subgraph = g filter g.having(edge = {
@@ -42,10 +45,26 @@ class ComponentConnectorStrategy extends Strategy {
       println(c)
     }*/
     if (componentsNumber > 1) {
-      val component1Idx = rng.nextInt(componentsNumber)
+
+      // if number of components did not change since last move,
+      // we will proceed with the same component.
+      val component1Idx =
+        if (prevComponentsNumber == Some(componentsNumber)) {
+          prevComponentIdx match {
+            case None => rng.nextInt(componentsNumber)
+            case Some(n) => n
+          }
+        } else {
+          rng.nextInt(componentsNumber)
+        }
+
       val component2Idx = (component1Idx + 1) % componentsNumber
+      println(s"Will try to connect components #$component1Idx and #$component2Idx.")
       val component1 = components(component1Idx)
       val component2 = components(component2Idx)
+
+      prevComponentsNumber = Some(componentsNumber)
+      prevComponentIdx = Some(component1Idx)
 
       assert(! component1.isEmpty)
       assert(! component1.isEmpty)
@@ -104,6 +123,9 @@ class ComponentConnectorStrategy extends Strategy {
 
     if (candidates.isEmpty) {
       println("Component connector can not find good move")
+      // do not stuck with this
+      prevComponentIdx = None
+
       Pass(me)
     } else {
       val index = rng.nextInt(candidates.size)
