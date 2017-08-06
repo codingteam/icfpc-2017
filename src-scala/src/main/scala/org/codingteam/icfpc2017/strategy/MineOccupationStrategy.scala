@@ -2,7 +2,7 @@ package org.codingteam.icfpc2017.strategy
 
 import org.codingteam.icfpc2017.GameMap.Mine
 import org.codingteam.icfpc2017.Messages.{Move, Pass}
-import org.codingteam.icfpc2017.{GameMap, Messages, Logging}
+import org.codingteam.icfpc2017.{Canceller, GameMap, Logging, Messages}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
@@ -14,7 +14,7 @@ class MineOccupationStrategy extends Strategy with Logging {
 
   private var rng = Random
 
-  override def nextMove(): Move = {
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     val g = graph.graph
     val mineNodes = g.nodes.filter {
       node: g.NodeT => node.value.isInstanceOf[Mine]
@@ -25,6 +25,7 @@ class MineOccupationStrategy extends Strategy with Logging {
     // first, try to reach each mine at least once
     mineNodes.foreach({
       mineNode : g.NodeT => {
+        cancel.checkCancelled()
         val noMyEdges = mineNode.edges.filter(_.label == me).isEmpty
         if (noMyEdges) {
           val freeEdges = mineNode.edges.filter(_.label == None)

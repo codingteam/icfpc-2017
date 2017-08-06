@@ -1,7 +1,7 @@
 package org.codingteam.icfpc2017.strategy
 
 import org.codingteam.icfpc2017.Messages.{Move, Pass}
-import org.codingteam.icfpc2017.{GameMap, Messages, Logging}
+import org.codingteam.icfpc2017.{Canceller, GameMap, Logging, Messages}
 
 import scala.util.Random
 
@@ -12,7 +12,7 @@ class DumbObstructorStrategy extends Strategy with Logging {
 
   private var rng = Random
 
-  override def nextMove(): Move = {
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     var candidates = graph.getFreeNearMines()
     if (candidates.isEmpty) {
       candidates = graph.getForeignNeighbours(me)

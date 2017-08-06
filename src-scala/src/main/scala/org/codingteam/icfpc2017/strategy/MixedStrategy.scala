@@ -1,10 +1,13 @@
 package org.codingteam.icfpc2017.strategy
 
 import java.io.{InputStream, OutputStream}
+import java.util.concurrent.TimeUnit
 
 import org.codingteam.icfpc2017.Messages.Move
-import org.codingteam.icfpc2017.{CommonState, Messages, Logging}
+import org.codingteam.icfpc2017.{Canceller, CommonState, ExecutionContexts, Logging, Messages}
 
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, CancellationException, Future, TimeoutException}
 import scala.util.Random
 
 /**
@@ -36,16 +39,33 @@ class MixedStrategy(val strategies: Seq[(Double, Strategy)]) extends Strategy wi
   //  *     w_i  - вес стратегии i
   //  *     p_i  - good move probability, которую вернула стратегия i
   //  *     S    - множество всех стратегий
-  override def nextMove(): Move = {
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     val ps = strategies.map(s => (s._2, s._2.goodMoveProbability() * s._1))
     val W = ps.map(_._2).sum
+
+    @inline def getMove(s: Strategy): Move = {
+      log.debug(s"Mixed: Selected strategy: $s")
+      val fut = Future(s.nextMove(deadLineMs, cancel))(ExecutionContexts.backgroundContext)
+      try {
+        Await.result(fut, Duration(deadLineMs - System.currentTimeMillis(), TimeUnit.MILLISECONDS))
+      } catch {
+        case _: TimeoutException =>
+          log.debug("Deadline timeout, return Pass()")
+          Messages.Pass(me)
+        case _: InterruptedException =>
+          log.debug("Wait on nextMove() interrupted, return Pass()")
+          Messages.Pass(me)
+        case _: CancellationException =>
+          log.debug("nextMove() cancelled, return Pass()")
+          Messages.Pass(me)
+      }
+    }
 
     var probability = rnd.nextDouble()
     for (s <- ps) {
       probability -= s._2 / W
       if (probability <= 0) {
-        log.debug(s"Mixed: Selected strategy: ${s._1}")
-        return s._1.nextMove()
+        return getMove(s._1)
       }
     }
     Messages.Pass(me)

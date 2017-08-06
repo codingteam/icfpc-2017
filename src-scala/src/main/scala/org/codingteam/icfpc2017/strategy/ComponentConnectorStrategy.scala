@@ -4,13 +4,12 @@ import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.GameMap.Node
 import org.codingteam.icfpc2017.Messages.{Move, Pass}
-import org.codingteam.icfpc2017.{GameMap, Messages, Logging}
+import org.codingteam.icfpc2017.{Canceller, GameMap, Logging, Messages}
 
 import scala.collection.mutable.{Map => MMap, Set => MSet}
 import scala.util.Random
 import scalax.collection.edge.LUnDiEdge
 import scalax.collection.mutable.Graph
-import scalax.collection.edge.LBase.LEdgeImplicits
 
 /**
   * Created by portnov on 8/5/17.
@@ -93,7 +92,7 @@ class ComponentConnectorStrategy extends Strategy with Logging {
     }
   }
 
-  override def nextMove(): Move = {
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     if (noPaths) {
       log.debug("Last time there were no paths between components, i think they could not appear now.")
       return Pass(me)
@@ -122,7 +121,7 @@ class ComponentConnectorStrategy extends Strategy with Logging {
 
         assert(!component1._1.isEmpty)
         assert(!component1._1.isEmpty)
-
+        cancel.checkCancelled()
         calcComponentsPath(freeSubgraph, component1, component2) match {
           case None =>
           case Some(path) => {

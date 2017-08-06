@@ -49,6 +49,7 @@ class StreamParser private(streams: SocketLike, logFileName: Option[String]) ext
       val sb = new java.lang.StringBuilder
       var c = reader.read()
       while (c != -1) {
+        log.debug(s"read: $c")
         sb.append(c.toChar)
         c = reader.read()
       }

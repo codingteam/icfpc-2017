@@ -2,9 +2,10 @@ package org.codingteam.icfpc2017.strategy
 
 import java.io.{InputStream, OutputStream}
 
-import org.codingteam.icfpc2017.CommonState
 import org.codingteam.icfpc2017.Messages.Move
+import org.codingteam.icfpc2017.{Canceller, CommonState, Messages}
 
+import scala.concurrent.CancellationException
 import scala.util.Random
 
 /**
@@ -21,14 +22,19 @@ class DelegatingStrategy(val strategies: Seq[Strategy]) extends Strategy {
     strategies foreach (_.commonState = s)
   }
 
-  override def nextMove(): Move = {
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     val ps = strategies.map(s => (s, s.goodMoveProbability())) sortBy (v => -v._2)
     // случайно выбираем из наилучших стратегий, если они имеют близкие вероятности.
     val best = ps.head
     val Accuracy = 0.05
     val good = ps.takeWhile(_._2 >= best._2 - Accuracy)
     assert(good.nonEmpty)
-    good(rnd nextInt good.size)._1.nextMove()
+    val selected = good(rnd nextInt good.size)._1
+    try {
+      selected.nextMove(deadLineMs, cancel)
+    } catch {
+      case _: CancellationException => Messages.Pass(me)
+    }
   }
 
   override def updateState(moves: Seq[Move]): Unit = {
