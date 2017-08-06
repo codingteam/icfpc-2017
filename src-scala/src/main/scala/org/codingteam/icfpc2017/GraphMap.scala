@@ -139,7 +139,8 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
       startEdges.foreach({edge : Graph[Node, LUnDiEdge]#EdgeT =>
         edge.nodes.foreach({node : Graph[Node, LUnDiEdge]#NodeT =>
           node.edges.foreach({neighbour : Graph[Node, LUnDiEdge]#EdgeT =>
-            if (! startEdges.contains(neighbour)) {
+            val label = neighbour.label
+            if (!startEdges.contains(neighbour) && label == None) {
               result += neighbour
             }
           })
