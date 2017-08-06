@@ -55,7 +55,7 @@ object AppEntry extends App with Logging {
         runTcpLoop(host, port, Some(s"logs/game-${Instant.now().toEpochMilli}.lson"), name)
 
       case Array("--offline") =>
-        //        Logging.outputStream = None
+        Logging.outputStream = None
         runOfflineLoop(None, "codingpunter")
 
       case Array("--offline-with-log", name) =>
