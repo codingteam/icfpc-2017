@@ -63,9 +63,13 @@ class CommonState {
     val data = new DataInputStream(is)
     me = Punter(data.readLong())
     punterCount = data.readInt()
+    //SerializationUtils.checkMagic("FU", data)
     futures = SerializationUtils.readFutures(data)
+    //SerializationUtils.checkMagic("SET", data)
     settings = SerializationUtils.readSettings(data)
+    //SerializationUtils.checkMagic("MAP", data)
     map = SerializationUtils.readMap(data)
+    //SerializationUtils.checkMagic("GR", data)
     graph = SerializationUtils.readGraph(data)
   }
 
@@ -73,9 +77,13 @@ class CommonState {
     val data = new DataOutputStream(os)
     data.writeLong(me.id.toLong)
     data.writeInt(punterCount)
+    //SerializationUtils.writeMagic("FU", data)
     SerializationUtils.writeFutures(futures, data)
+    //SerializationUtils.writeMagic("SET", data)
     SerializationUtils.writeSettings(settings, data)
+    //SerializationUtils.writeMagic("MAP", data)
     SerializationUtils.writeMap(map, data)
+    //SerializationUtils.writeMagic("GR", data)
     SerializationUtils.writeGraph(graph, data)
   }
 }
