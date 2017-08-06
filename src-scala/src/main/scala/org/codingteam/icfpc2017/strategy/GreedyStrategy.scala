@@ -43,6 +43,7 @@ class GreedyStrategy extends Strategy {
           score = newScore
           best = edge
         }
+        graph.setDisatanceCache(hypothesis.getDistanceCacheCopy())
       }
 
       val from = best._1.value match {
