@@ -43,6 +43,8 @@ object HandlerLoop extends Logging {
       }
       strategy.commonState = fullState.commonState
 
+      var moveNumber = 1
+      val maxMoves = fullState.commonState.map.rivers.size
       while (true) {
         val request = server.readFromServer()
 
@@ -58,6 +60,9 @@ object HandlerLoop extends Logging {
             fullState.updateState(Seq(m))
             val fullfilledFutures = fullState.commonState.getFutureStats
             log.info(s"Our futures fullfilled: ${fullfilledFutures._1} of ${fullfilledFutures._2}")
+            val score = fullState.commonState.graph.score(fullState.commonState.me, fullState.commonState.futures)
+            log.info(s"Our expected score: $score; this is move $moveNumber of max $maxMoves.")
+            moveNumber += 1
             m
 
           case Some(stop: Stop) =>

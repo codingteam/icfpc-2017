@@ -49,10 +49,10 @@ class RandomConnectorStrategy extends Strategy with Logging {
       val sourceNode = map.siteToNode(from)
       val targetNode = map.siteToNode(to)
       graph.mark(sourceNode, targetNode, me)
-      val score = graph.score(me, commonState.futures)
+      /*val score = graph.score(me, commonState.futures)
       val our = graph.getPunterEdges(me).size
       val total = graph.graph.edges.size
-      log.info(s"Our expected score: $score, our edges: $our, total edges: $total")
+      log.info(s"Our expected score: $score, our edges: $our, total edges: $total")*/
       Messages.Claim(me, from, to)
     }
   }

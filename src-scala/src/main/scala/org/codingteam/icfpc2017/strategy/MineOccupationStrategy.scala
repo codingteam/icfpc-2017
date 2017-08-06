@@ -91,10 +91,10 @@ class MineOccupationStrategy extends Strategy with Logging {
       val sourceNode = map.siteToNode(from)
       val targetNode = map.siteToNode(to)
       graph.mark(sourceNode, targetNode, me)
-      val score = graph.score(me, commonState.futures)
+      /*val score = graph.score(me, commonState.futures)
       val our = graph.getPunterEdges(me).size
       val total = graph.graph.edges.size
-      log.debug(s"Our expected score: $score, our edges: $our, total edges: $total")
+      log.debug(s"Our expected score: $score, our edges: $our, total edges: $total")*/
       Messages.Claim(me, from, to)
     }
   }

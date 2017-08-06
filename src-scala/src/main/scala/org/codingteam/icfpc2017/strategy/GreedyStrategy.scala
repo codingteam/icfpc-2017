@@ -56,7 +56,7 @@ class GreedyStrategy extends Strategy with Logging {
         case GameMap.Mine(id) => GameMap.Site(id)
       }
 
-      log.debug(s"Our expected score: $score")
+      //log.debug(s"Our expected score: $score")
       Messages.Claim(me, from, to)
     }
   }
