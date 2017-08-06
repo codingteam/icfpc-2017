@@ -39,7 +39,7 @@ object AppEntry extends App with Logging {
         log.debug(map)
         log.debug(map.getFreeEdges())
         log.debug(map.getPunterSubgraph(Punter(666)))
-        log.debug(map.score(Punter(666)))
+        log.debug(map.score(Punter(666), None))
 
       case Array("--tcp", host, Parsing.I(port)) =>
         runTcpLoop(host, port, None, "codingpunter")

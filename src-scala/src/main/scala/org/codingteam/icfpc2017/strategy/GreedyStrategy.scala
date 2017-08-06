@@ -38,7 +38,7 @@ class GreedyStrategy extends Strategy with Logging {
         var hypothesis = GraphMap(Graph.from(graph.graph.nodes, graph.graph.edges))
         hypothesis.setDisatanceCache(graph.getDistanceCacheCopy())
         hypothesis.mark(edge._1.value, edge._2.value, me)
-        val newScore = hypothesis.score(me)
+        val newScore = hypothesis.score(me, commonState.futures)
         if (newScore > score) {
           score = newScore
           best = edge
