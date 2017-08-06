@@ -8,14 +8,17 @@ import java.io.PrintStream
 trait Logging {
 
   lazy val log: Logging.Logger = Logging.createLogger(getClass.getName)
-
 }
 
 object Logging {
 
-  def createLogger(name: String): Logger = outputStream map (new StreamLogger(name, _)) getOrElse NullLogger
+  def createLogger(name: String): Logger = if (outputStream.isDefined) new StreamLogger(name) else NullLogger
 
-  var outputStream: Option[PrintStream] = None
+  private var _outputStream: Option[PrintStream] = None
+
+  def outputStream: Option[PrintStream] = _outputStream
+
+  def outputStream_=(os: Option[PrintStream]): Unit = _outputStream = os
 
   trait Logger {
     def debug(msg: String): Unit
@@ -35,7 +38,8 @@ object Logging {
     override def error(msg: String, cause: Throwable = null): Unit = {}
   }
 
-  class StreamLogger(name: String, out: PrintStream) extends Logger {
+  class StreamLogger(name: String) extends Logger {
+    def out = Logging.outputStream
 
     /** Name in converted form (e.g. java.util.List => j.u.List).  */
     lazy val convertedName: String = {
@@ -44,17 +48,19 @@ object Logging {
     }
 
     override def debug(msg: String): Unit = {
-      out.println(s"DEBUG $convertedName: $msg")
+      out.foreach(_.println(s"DEBUG $convertedName: $msg"))
     }
 
     override def info(msg: String): Unit = {
-      out.println(s"INFO $convertedName: $msg")
+      out.foreach(_.println(s"INFO $convertedName: $msg"))
     }
 
     override def error(msg: String, cause: Throwable = null): Unit = {
-      out.println(s"ERROR $convertedName: $msg")
-      if (cause ne null)
-        cause.printStackTrace(out)
+      out.foreach { o =>
+        o.println(s"ERROR $convertedName: $msg")
+        if (cause ne null)
+          cause.printStackTrace(o)
+      }
     }
 
   }
