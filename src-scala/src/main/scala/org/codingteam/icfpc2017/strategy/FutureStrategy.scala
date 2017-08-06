@@ -2,15 +2,12 @@ package org.codingteam.icfpc2017.strategy
 
 import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
+import org.codingteam.icfpc2017.GameMap.{Mine, Site}
 import org.codingteam.icfpc2017.Messages.{Claim, Move, Pass}
-import org.codingteam.icfpc2017.GameMap.{Node,Site,Mine}
-import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap, Logging, Messages, SerializationUtils}
 import org.codingteam.icfpc2017.futures.Future
+import org.codingteam.icfpc2017.{Canceller, CommonState, GameMap, GraphMap, Logging, Messages, SerializationUtils}
 
 import scala.util.Random
-import scalax.collection.edge.LUnDiEdge
-import scalax.collection.mutable.Graph
-import scalax.collection.edge.LBase.LEdgeImplicits
 
 /**
   * Created by portnov on 8/6/17.
@@ -28,7 +25,7 @@ class FutureStrategy extends Strategy with Logging {
     _graph = GraphMap.fromMap(s.map)
   }
 
-  override def nextMove(): Move = {
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     if (!commonState.futures.isDefined) {
       return Pass(me)
     } else {
@@ -36,8 +33,9 @@ class FutureStrategy extends Strategy with Logging {
       val freeSubgraph = g filter g.having(edge = {
         edge: g.EdgeT => edge.label == None
       })
-      val moves = commonState.futures.get.flatMap({
-        future: Future => {
+      val moves = commonState.futures.get.flatMap {
+        future: Future =>
+          cancel.checkCancelled()
           val mineNode = g get (Mine(future.sourceId))
           // FIXME
           val ourNodes = mineNode.withSubgraph(edges = _.label == me)
@@ -105,9 +103,7 @@ class FutureStrategy extends Strategy with Logging {
               }
             }
           }
-
-        }
-      })
+      }
 
       moves.headOption match {
         case None =>

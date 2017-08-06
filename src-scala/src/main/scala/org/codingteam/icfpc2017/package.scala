@@ -2,6 +2,7 @@ package org.codingteam
 
 import java.io.{InputStream, OutputStream}
 import java.net.Socket
+import java.util.concurrent.CancellationException
 
 import org.json4s.JsonAST.JValue
 
@@ -77,4 +78,13 @@ package object icfpc2017 {
     def toOption[T](v: => T): Option[T] = if (b) Some(v) else None
   }
 
+  class Canceller {
+    @volatile var isCancelled: Boolean = false
+
+    def checkCancelled(): Unit = {
+      if (isCancelled)
+        throw new CancellationException("Cancelled")
+    }
+
+  }
 }

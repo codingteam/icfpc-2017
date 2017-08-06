@@ -2,8 +2,8 @@ package org.codingteam.icfpc2017.strategy
 
 import org.codingteam.icfpc2017.GameMap.Mine
 import org.codingteam.icfpc2017.Messages.{Move, Pass}
-import org.codingteam.icfpc2017.{GameMap, Messages, Logging}
 import org.codingteam.icfpc2017.futures.Future
+import org.codingteam.icfpc2017.{Canceller, GameMap, Logging, Messages}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
@@ -15,12 +15,12 @@ class MineOccupationStrategy extends Strategy with Logging {
 
   private var rng = Random
 
-  override def nextMove(): Move = {
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     val g = graph.graph
     val allMineNodes = g.nodes.filter {
       node: g.NodeT => node.value.isInstanceOf[Mine]
     }
-    var futureMineNodes : Iterable[g.NodeT] =
+    var futureMineNodes: Iterable[g.NodeT] =
       commonState.futures match {
         case None => List()
         case Some(list) =>
@@ -29,15 +29,16 @@ class MineOccupationStrategy extends Strategy with Logging {
           })
       }
 
-    var candidates : ListBuffer[g.EdgeT] = ListBuffer()
+    var candidates: ListBuffer[g.EdgeT] = ListBuffer()
 
     // first, try to reach futures mines
     futureMineNodes.foreach({
-      mineNode : g.NodeT => {
+      mineNode: g.NodeT => {
+        cancel.checkCancelled()
         val noMyEdges = mineNode.edges.filter(_.label == me).isEmpty
         if (noMyEdges) {
           val freeEdges = mineNode.edges.filter(_.label == None)
-          if (! freeEdges.isEmpty) {
+          if (!freeEdges.isEmpty) {
             candidates += freeEdges.head
           }
         }
@@ -62,9 +63,9 @@ class MineOccupationStrategy extends Strategy with Logging {
     // third, try to occupy all mines
     if (candidates.isEmpty) {
       allMineNodes.foreach({
-        mineNode : g.NodeT => {
+        mineNode: g.NodeT => {
           val freeEdges = mineNode.edges.filter(_.label == None)
-          if (! freeEdges.isEmpty) {
+          if (!freeEdges.isEmpty) {
             candidates += freeEdges.head
           }
         }
@@ -122,11 +123,11 @@ class MineOccupationStrategy extends Strategy with Logging {
 
     // first, try to reach futures mines
     futureMineNodes.foreach({
-      mineNode : g.NodeT => {
+      mineNode: g.NodeT => {
         val noMyEdges = mineNode.edges.filter(_.label == me).isEmpty
         if (noMyEdges) {
           val freeEdges = mineNode.edges.filter(_.label == None)
-          if (! freeEdges.isEmpty) {
+          if (!freeEdges.isEmpty) {
             futureMines += 1
           }
         }
@@ -135,11 +136,11 @@ class MineOccupationStrategy extends Strategy with Logging {
 
     // second, try to reach each mine at least once
     allMineNodes.foreach({
-      mineNode : g.NodeT => {
+      mineNode: g.NodeT => {
         val noMyEdges = mineNode.edges.filter(_.label == me).isEmpty
         if (noMyEdges) {
           val freeEdges = mineNode.edges.filter(_.label == None)
-          if (! freeEdges.isEmpty) {
+          if (!freeEdges.isEmpty) {
             //log.debug(s"Free mine: $mineNode, edges: ${mineNode.edges}")
             freeMines += 1
           }
@@ -150,9 +151,9 @@ class MineOccupationStrategy extends Strategy with Logging {
     // third, try to occupy all mines
     if (freeMines == 0) {
       allMineNodes.foreach({
-        mineNode : g.NodeT => {
+        mineNode: g.NodeT => {
           val freeEdges = mineNode.edges.filter(_.label == None)
-          if (! freeEdges.isEmpty) {
+          if (!freeEdges.isEmpty) {
             underoccupiedMines += 1
           }
         }

@@ -4,8 +4,8 @@ import java.io.EOFException
 
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.Messages._
-import org.codingteam.icfpc2017.strategy.Strategy
 import org.codingteam.icfpc2017.futures.RandomFutureGenerator
+import org.codingteam.icfpc2017.strategy.Strategy
 
 /**
   * Message processing cycle.
@@ -50,7 +50,11 @@ object HandlerLoop extends Logging {
           case Some(move: MoveRq) =>
             fullState.updateState(move.moves)
 
-            val m = strategy.nextMove()
+            val deadLine = System.currentTimeMillis() + 1000 - 100
+            val canceller = new Canceller
+            val m = strategy.nextMove(deadLine, canceller)
+            canceller.isCancelled = true
+
             fullState.updateState(Seq(m))
             val fullfilledFutures = fullState.commonState.getFutureStats
             log.info(s"Our futures fullfilled: ${fullfilledFutures._1} of ${fullfilledFutures._2}")
@@ -83,6 +87,7 @@ object HandlerLoop extends Logging {
       server.writeToServer(helloJson)
       // ignoring the response - nothing interesting there
       val helloResponse = server.readFromServer()
+      val startTime = System.currentTimeMillis()
 
       val request = server.readFromServer()
       Messages.parseServerMessageJson(request) match {
@@ -102,13 +107,17 @@ object HandlerLoop extends Logging {
         case Some(move: MoveRq) =>
           // ...and here
           val fullState = new FullState(new CommonState, strategy)
+
           fullState.readFromJson(move.state)
 
           strategy.commonState = fullState.commonState
 
           fullState.updateState(move.moves)
 
-          val nextMove = strategy.nextMove()
+          val deadLine = startTime + 800
+          val canceller = new Canceller
+          val nextMove = strategy.nextMove(deadLine, canceller)
+          canceller.isCancelled = true
 
           fullState.updateState(Seq(nextMove))
 

@@ -3,7 +3,7 @@ package org.codingteam.icfpc2017.strategy
 import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Messages.{Claim, Move, Pass}
-import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap, Logging, Messages, SerializationUtils}
+import org.codingteam.icfpc2017.{Canceller, CommonState, GameMap, GraphMap, Logging, Messages, SerializationUtils}
 
 import scala.util.Random
 
@@ -22,7 +22,7 @@ class RandomConnectorStrategy extends Strategy with Logging {
     _graph = GraphMap.fromMap(s.map)
   }
 
-  override def nextMove(): Move = {
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     val neighbours = graph.getPunterNeighbours(me)
     val candidates =
       if (neighbours.isEmpty) {

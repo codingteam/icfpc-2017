@@ -3,7 +3,7 @@ package org.codingteam.icfpc2017.strategy
 import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Messages.{Claim, Move}
-import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap, Messages, SerializationUtils, Logging}
+import org.codingteam.icfpc2017.{Canceller, CommonState, GameMap, GraphMap, Logging, Messages, SerializationUtils}
 
 import scala.util.Random
 import scalax.collection.mutable.Graph
@@ -21,7 +21,7 @@ class GreedyStrategy extends Strategy with Logging {
 
   private var rng = Random
 
-  override def nextMove(): Move = {
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     var neighbours = graph.getPunterNeighbours(me)
     if (neighbours.isEmpty) {
       neighbours = graph.getFreeNearMines()
@@ -35,6 +35,7 @@ class GreedyStrategy extends Strategy with Logging {
       var best = neighbours.toIndexedSeq(0)
       var score = 0
       for (edge <- neighbours) {
+        cancel.checkCancelled()
         var hypothesis = GraphMap(Graph.from(graph.graph.nodes, graph.graph.edges))
         hypothesis.setDisatanceCache(graph.getDistanceCacheCopy())
         hypothesis.mark(edge._1.value, edge._2.value, me)
