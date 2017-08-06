@@ -87,6 +87,7 @@ object AppEntry extends App with Logging {
       case "connector" => new DelegatingStrategy(Seq(new ComponentConnectorStrategy()))
       case "mixed" => new MixedStrategy(Seq(
         (2.0, new GreedyStrategy()),
+        (1.0, new MineOccupationStrategy()),
         (1.0, new ComponentConnectorStrategy()),
         (1.0, new DumbObstructorStrategy()),
         (0.5, new RandomConnectorStrategy())))
