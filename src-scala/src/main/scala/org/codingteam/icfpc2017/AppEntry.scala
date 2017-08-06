@@ -52,7 +52,6 @@ object AppEntry extends App with Logging {
         runTcpLoop(host, port, None, strategy)
 
       case Array("--tcp-with-log", host, Parsing.I(port), name) =>
-        Logging.outputStream = Some(new PrintStream(new File(s"logs/game-${Instant.now().toEpochMilli}.lson")))
         runTcpLoop(host, port, Some(s"logs/game-${Instant.now().toEpochMilli}.lson"), name)
 
       case Array("--offline") =>
