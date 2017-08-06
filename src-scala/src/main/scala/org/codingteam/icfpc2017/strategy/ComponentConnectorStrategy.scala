@@ -19,8 +19,7 @@ class ComponentConnectorStrategy extends Strategy {
 
   private var rng = Random
 
-  private var prevComponentsNumber: Option[Int] = None
-  private var prevComponentIdx: Option[Int] = None
+  private var noPaths : Boolean = false
 
   def getComponents(): Seq[(Iterable[Node], Int)] = {
     val g = graph.graph
@@ -95,13 +94,16 @@ class ComponentConnectorStrategy extends Strategy {
   }
 
   override def nextMove(): Move = {
+    if (noPaths) {
+      println("Last time there were no paths between components, i think they could not appear now.")
+      return Pass(me)
+    }
     val g = graph.graph
     val freeSubgraph = g filter g.having(edge = {
       edge: g.EdgeT => edge.label == None
     })
     //println(s"Free subgraph: $freeSubgraph")
 
-    var candidates: List[freeSubgraph.EdgeT] = List()
     val components = getComponents()
     val componentsNumber = components.size
     /*println(s"Found components: ${components.size}")
@@ -137,6 +139,7 @@ class ComponentConnectorStrategy extends Strategy {
       bestPath match {
         case None => {
           println("Component connector can not find good move")
+          noPaths = true
           Pass(me)
         }
         case Some(path) => {
@@ -174,19 +177,23 @@ class ComponentConnectorStrategy extends Strategy {
   }
 
   override def goodMoveProbability(): Double = {
-    val g = graph.graph
-    val subgraph = g filter g.having(edge = {
-      edge: g.EdgeT => (edge.label != None) && (edge.label == me)
-    })
-    val componentsNumber = getComponents().size
-    println(s"Found components: ${componentsNumber}")
-    if (componentsNumber > 1) {
-      /*for (c <- components) {
-        println(c)
-      }*/
-      componentsNumber
-    } else {
+    if (noPaths) {
       0.0
+    } else {
+      val g = graph.graph
+      val subgraph = g filter g.having(edge = {
+        edge: g.EdgeT => (edge.label != None) && (edge.label == me)
+      })
+      val componentsNumber = getComponents().size
+      println(s"Found components: ${componentsNumber}")
+      if (componentsNumber > 1) {
+        /*for (c <- components) {
+          println(c)
+        }*/
+        componentsNumber
+      } else {
+        0.0
+      }
     }
   }
 
@@ -194,19 +201,11 @@ class ComponentConnectorStrategy extends Strategy {
 
   override def read(is: InputStream): Unit = {
     val data = new DataInputStream(is)
-    prevComponentIdx = data.readInt() match {
-      case -1 => None
-      case n => Some(n)
-    }
-    prevComponentsNumber = data.readInt() match {
-      case -1 => None
-      case n => Some(n)
-    }
+    noPaths = data.readBoolean()
   }
 
   override def write(os: OutputStream): Unit = {
     val data = new DataOutputStream(os)
-    data.writeInt(prevComponentIdx getOrElse -1)
-    data.writeInt(prevComponentsNumber getOrElse -1)
+    data.writeBoolean(noPaths)
   }
 }
