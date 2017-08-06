@@ -102,11 +102,13 @@ object Messages {
           ("source" -> source.id) ~
           ("target" -> target.id)
     } else {
-      "claim" ->
-        (("punter" -> punter.id) ~
-          ("source" -> source.id) ~
-          ("target" -> target.id)) ~
-          ("state" -> state)
+      JObject(
+        "claim" ->
+          (("punter" -> punter.id) ~
+            ("source" -> source.id) ~
+            ("target" -> target.id)),
+        "state" -> state
+      )
     }
   }
 
