@@ -1,8 +1,7 @@
 package org.codingteam.icfpc2017
 
-import org.codingteam.icfpc2017.Common.Punter
-import org.codingteam.icfpc2017.Messages.{Claim, Pass, Move}
-import org.json4s.JsonAST.{JNothing, JValue}
+import org.codingteam.icfpc2017.Messages.{Move, Pass}
+
 import scala.util.Random
 
 /**
@@ -10,14 +9,7 @@ import scala.util.Random
   */
 class DumbObstructorStrategy extends Strategy {
 
-  private var graph: GraphMap = GraphMap.fromMap(GameMap.Map.createEmpty)
-
   private var rng = Random
-
-  override def map_=(map: GameMap.Map): Unit = {
-    super.map = map
-    graph = GraphMap.fromMap(map)
-  }
 
   override def nextMove(): Move = {
     var candidates = graph.getFreeNearMines()
@@ -51,26 +43,10 @@ class DumbObstructorStrategy extends Strategy {
     }
   }
 
-  override def updateState(moves: Seq[Move]) = {
-    for (move <- moves) {
-      move match {
-        case Claim(punter, source, target) => {
-          val sourceNode = map.siteToNode(source)
-          val targetNode = map.siteToNode(target)
-          graph.mark(sourceNode, targetNode, punter)
-        }
-        case _ => {}
-      }
-    }
-  }
-
+  override def updateState(moves: Seq[Move]): Unit = {}
 
   override def goodMoveProbability(): Double = {
     1
   }
-
-  def state: JValue = JNothing
-
-  def state_=(s: JValue) = ()
 
 }

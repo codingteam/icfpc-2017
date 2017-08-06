@@ -1,22 +1,22 @@
 package org.codingteam.icfpc2017
 
-import org.codingteam.icfpc2017.Common.Punter
-import org.codingteam.icfpc2017.Messages.{Claim, Pass, Move}
-import org.json4s.JsonAST.{JNothing, JValue}
+import org.codingteam.icfpc2017.Messages.{Claim, Move, Pass}
+
 import scala.util.Random
 
 /**
   * Created by portnov on 8/5/17.
   */
-class RandomConnectorStrategy extends Strategy {
+class RandomConnectorStrategy extends Strategy with Logging {
 
-  private var graph: GraphMap = GraphMap.fromMap(GameMap.Map.createEmpty)
+  private var _graph: GraphMap = GraphMap.fromMap(GameMap.Map.createEmpty)
 
+  override def graph: GraphMap = _graph
   private var rng = Random
 
-  override def map_=(map: GameMap.Map): Unit = {
-    super.map = map
-    graph = GraphMap.fromMap(map)
+  override def commonState_=(s: CommonState): Unit = {
+    super.commonState_=(s)
+    _graph = GraphMap.fromMap(s.map)
   }
 
   override def nextMove(): Move = {
@@ -49,7 +49,7 @@ class RandomConnectorStrategy extends Strategy {
       val score = graph.score(me)
       val our = graph.getPunterEdges(me).size
       val total = graph.graph.edges.size
-      println(s"Our expected score: $score, our edges: $our, total edges: $total")
+      log.info(s"Our expected score: $score, our edges: $our, total edges: $total")
       Messages.Claim(me, from, to)
     }
   }
@@ -71,9 +71,5 @@ class RandomConnectorStrategy extends Strategy {
   override def goodMoveProbability(): Double = {
     1
   }
-
-  def state: JValue = JNothing
-
-  def state_=(s: JValue) = ()
 
 }

@@ -1,24 +1,24 @@
 package org.codingteam.icfpc2017
 
-import org.codingteam.icfpc2017.Common.Punter
-import org.codingteam.icfpc2017.GameMap.Node
+import java.io.{InputStream, OutputStream}
+
 import org.codingteam.icfpc2017.Messages.{Claim, Move}
-import org.json4s.JsonAST.{JNothing, JValue}
 
 import scala.util.Random
-import scalax.collection.edge.LUnDiEdge
 import scalax.collection.mutable.Graph
 
 class GreedyStrategy extends Strategy {
 
-  private var graph: GraphMap = GraphMap.fromMap(GameMap.Map.createEmpty)
+  private var _graph: GraphMap = GraphMap.fromMap(GameMap.Map.createEmpty)
+
+  override def graph: GraphMap = _graph
+
+  override def commonState_=(s: CommonState): Unit = {
+    super.commonState_=(s)
+    _graph = GraphMap.fromMap(s.map)
+  }
 
   private var rng = Random
-
-  override def map_=(map: GameMap.Map): Unit = {
-    super.map = map
-    graph = GraphMap.fromMap(map)
-  }
 
   override def nextMove(): Move = {
     var neighbours = graph.getPunterNeighbours(me)
@@ -79,7 +79,7 @@ class GreedyStrategy extends Strategy {
     1
   }
 
-  def state: JValue = JNothing
+  override def read(is: InputStream): Unit = {}
 
-  def state_=(s: JValue) = ()
+  override def write(os: OutputStream): Unit = {}
 }

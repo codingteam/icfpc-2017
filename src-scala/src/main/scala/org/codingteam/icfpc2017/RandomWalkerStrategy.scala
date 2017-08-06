@@ -1,8 +1,7 @@
 package org.codingteam.icfpc2017
 
-import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.Messages.{Claim, Move}
-import org.json4s.JsonAST.{JNothing, JValue}
+
 import scala.util.Random
 
 /**
@@ -10,13 +9,15 @@ import scala.util.Random
   */
 class RandomWalkerStrategy extends Strategy {
 
-  private var graph: GraphMap = GraphMap.fromMap(GameMap.Map.createEmpty)
+  private var _graph: GraphMap = GraphMap.fromMap(GameMap.Map.createEmpty)
+
+  override def graph: GraphMap = _graph
 
   private var rng = Random
 
-  override def map_=(map: GameMap.Map): Unit = {
-    super.map = map
-    graph = GraphMap.fromMap(map)
+  override def commonState_=(s: CommonState): Unit = {
+    super.commonState_=(s)
+    _graph = GraphMap.fromMap(s.map)
   }
 
   override def nextMove(): Move = {
@@ -47,13 +48,8 @@ class RandomWalkerStrategy extends Strategy {
     }
   }
 
-
   override def goodMoveProbability(): Double = {
     1 / graph.getFreeEdges().size
   }
-
-  def state: JValue = JNothing
-
-  def state_=(s: JValue) = ()
 
 }

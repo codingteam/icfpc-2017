@@ -1,28 +1,17 @@
 package org.codingteam.icfpc2017
 
-import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.GameMap.Node
-import org.codingteam.icfpc2017.Messages.{Claim, Pass, Move}
-import org.json4s.JsonAST.{JNothing, JValue}
-import scala.util.Random
+import org.codingteam.icfpc2017.Messages.{Move, Pass}
+
 import scala.collection.mutable.{Map => MMap, Set => MSet}
-import scalax.collection.edge.LUnDiEdge
-import scalax.collection.mutable.Graph
-import scalax.collection.edge.LBase.LEdgeImplicits
+import scala.util.Random
 
 /**
   * Created by portnov on 8/5/17.
   */
 class ComponentConnectorStrategy extends Strategy {
 
-  private var graph: GraphMap = GraphMap.fromMap(GameMap.Map.createEmpty)
-
   private var rng = Random
-
-  override def map_=(map: GameMap.Map): Unit = {
-    super.map = map
-    graph = GraphMap.fromMap(map)
-  }
 
   def getComponents() : Seq[Iterable[Node]] = {
       val g = graph.graph
@@ -106,20 +95,6 @@ class ComponentConnectorStrategy extends Strategy {
     }
   }
 
-  override def updateState(moves: Seq[Move]) = {
-    for (move <- moves) {
-      move match {
-        case Claim(punter, source, target) => {
-          val sourceNode = map.siteToNode(source)
-          val targetNode = map.siteToNode(target)
-          graph.mark(sourceNode, targetNode, punter)
-        }
-        case _ => {}
-      }
-    }
-  }
-
-
   override def goodMoveProbability(): Double = {
     val g = graph.graph
     val subgraph = g filter g.having(edge = {
@@ -137,8 +112,5 @@ class ComponentConnectorStrategy extends Strategy {
     }
   }
 
-  def state: JValue = JNothing
-
-  def state_=(s: JValue) = ()
-
+  override def updateState(moves: Seq[Move]): Unit = {}
 }

@@ -19,30 +19,34 @@ object HandlerLoop extends Logging {
       val helloResponse = server.readFromServer()
       val setupRequest = server.readFromServer()
 
-      val (me, map, n) = Messages.parseServerMessageJson(setupRequest) match {
-        case Some(setup: SetupRq) => {
+      val fullState = Messages.parseServerMessageJson(setupRequest) match {
+        case Some(setup: SetupRq) =>
           val punter = Punter(setup.punter)
           val rs = SetupRs(punter)
           server.writeToServer(rs.toJson())
-          (punter, setup.map, setup.punters)
-        }
-        case _ => (Punter(0), GameMap.Map.createEmpty, 0)
+          new FullState(CommonState(setup.map, setup.punter, setup.punters), strategy)
+        case _ =>
+          new FullState(new CommonState, strategy)
       }
-      strategy.me = me
-      strategy.map = map
+      strategy.commonState = fullState.commonState
+
       while (true) {
         val request = server.readFromServer()
 
         val response = Messages.parseServerMessageJson(request) match {
-          case Some(move: MoveRq) => {
+          case Some(move: MoveRq) =>
+            fullState.commonState.updateState(move.moves)
             strategy.updateState(move.moves)
-            strategy.nextMove()
-          }
-          case Some(stop: Stop) => {
-            log.info("Our score: " + stop.getScore(me))
+
+            val m = strategy.nextMove()
+            fullState.commonState.updateState(Seq(m))
+            m
+
+          case Some(stop: Stop) =>
+            log.info("Our score: " + stop.getScore(fullState.commonState.me))
             return
-          }
-          case _ => Pass(me)
+
+          case _ => Pass(fullState.commonState.me)
         }
         server.writeToServer(response.toJson())
       }
@@ -50,6 +54,8 @@ object HandlerLoop extends Logging {
     } catch {
       case e: EOFException =>
         log.error("Exit during EOF from server", e)
+      case t: Throwable =>
+        log.error(s"Unknown error: $t", t)
     } finally {
       server.close()
     }
@@ -66,31 +72,47 @@ object HandlerLoop extends Logging {
       val request = server.readFromServer()
       Messages.parseServerMessageJson(request) match {
         case Some(setup: SetupRq) =>
-          val punter = Punter(setup.punter)
-          strategy.me = punter
-          strategy.map = setup.map
-          // TODO: save setup.punters in strategy.
-          val state = strategy.state
-          val rs = SetupRs(punter, state)
+          // -- realy fucking imperative code here --
+          val fullState = new FullState(CommonState(setup.map, setup.punter, setup.punters), strategy)
+          strategy.commonState = fullState.commonState
+
+          val rs = SetupRs(fullState.commonState.me, fullState.toJson())
           server.writeToServer(rs.toJson())
+
         case Some(move: MoveRq) =>
+          // ...and here
+          val fullState = new FullState(new CommonState, strategy)
+          fullState.readFromJson(move.state)
+
+          strategy.commonState = fullState.commonState
+
+          fullState.commonState.updateState(move.moves)
           strategy.updateState(move.moves)
+
           val nextMove = strategy.nextMove()
-          val state = strategy.state
-          nextMove.state = state
-          server.writeToServer(nextMove.toJson)
+
+          fullState.commonState.updateState(Seq(nextMove))
+
+          nextMove.state = fullState.toJson()
+          server.writeToServer(nextMove.toJson())
+
         case Some(stop: Stop) =>
-        //          val state = stop.state
-        // TODO: read punter from state and log score.
-        //          val me = Punter(0)
-        //          println(s"Our score: " + stop.getScore(me))
+          val fullState = new FullState(new CommonState, strategy)
+          fullState.readFromJson(stop.state)
+
+          // no need to initialize strategy after stop.
+          // strategy.commonState = fullState.commonState
+
+          val me = fullState.commonState.me
+          log.info(s"Our score: ${stop.getScore(me)}")
         case _ =>
       }
 
     } catch {
       case e: EOFException =>
-      // TODO: log error.
-      //        println("Exit during EOF from server")
+        log.error("Exit during EOF from server", e)
+      case t: Throwable =>
+        log.error(s"Unknown error: $t", t)
     } finally {
       server.close()
     }
