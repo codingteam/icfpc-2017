@@ -1,9 +1,10 @@
-package org.codingteam.icfpc2017
+package org.codingteam.icfpc2017.strategy
 
 import java.io.{InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.Messages.Move
+import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap}
 
 
 /**

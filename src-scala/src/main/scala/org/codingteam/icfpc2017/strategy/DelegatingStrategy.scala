@@ -1,7 +1,8 @@
-package org.codingteam.icfpc2017
+package org.codingteam.icfpc2017.strategy
 
 import java.io.{InputStream, OutputStream}
 
+import org.codingteam.icfpc2017.CommonState
 import org.codingteam.icfpc2017.Messages.Move
 
 import scala.util.Random

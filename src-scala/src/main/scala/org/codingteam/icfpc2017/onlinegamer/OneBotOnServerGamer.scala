@@ -1,5 +1,6 @@
 package org.codingteam.icfpc2017.onlinegamer
-import org.codingteam.icfpc2017.{DelegatingStrategy, RandomWalkerStrategy, Strategy}
+
+import org.codingteam.icfpc2017.strategy.{DelegatingStrategy, RandomWalkerStrategy, Strategy}
 
 class OneBotOnServerGamer() extends OnlineGamer {
 

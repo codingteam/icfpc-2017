@@ -1,6 +1,7 @@
-package org.codingteam.icfpc2017
+package org.codingteam.icfpc2017.strategy
 
 import org.codingteam.icfpc2017.Messages.{Claim, Move}
+import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap, Messages}
 
 import scala.util.Random
 

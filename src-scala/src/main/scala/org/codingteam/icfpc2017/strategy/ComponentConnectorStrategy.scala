@@ -1,7 +1,8 @@
-package org.codingteam.icfpc2017
+package org.codingteam.icfpc2017.strategy
 
 import org.codingteam.icfpc2017.GameMap.Node
 import org.codingteam.icfpc2017.Messages.{Move, Pass}
+import org.codingteam.icfpc2017.{GameMap, Messages}
 
 import scala.collection.mutable.{Map => MMap, Set => MSet}
 import scala.util.Random

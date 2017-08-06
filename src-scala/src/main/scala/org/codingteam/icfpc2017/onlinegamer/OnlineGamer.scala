@@ -1,13 +1,10 @@
 package org.codingteam.icfpc2017.onlinegamer
 
-import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorSystem, Props}
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
-import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
-import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
-import net.ruippeixotog.scalascraper.model._
-import org.codingteam.icfpc2017.Strategy
+import net.ruippeixotog.scalascraper.dsl.DSL._
+import org.codingteam.icfpc2017.strategy.Strategy
 
 import scala.collection.mutable.ListBuffer
 

@@ -3,6 +3,7 @@ package org.codingteam.icfpc2017
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream}
 import java.util.Base64
 
+import org.codingteam.icfpc2017.strategy.Strategy
 import org.json4s.JsonAST.{JString, JValue}
 
 /**

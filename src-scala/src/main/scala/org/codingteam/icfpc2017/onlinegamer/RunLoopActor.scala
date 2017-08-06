@@ -3,7 +3,8 @@ package org.codingteam.icfpc2017.onlinegamer
 import java.time.Instant
 
 import akka.actor.{Actor, Props}
-import org.codingteam.icfpc2017.{HandlerLoop, Strategy, StreamParser}
+import org.codingteam.icfpc2017.strategy.Strategy
+import org.codingteam.icfpc2017.{HandlerLoop, StreamParser}
 
 object RunLoopActor {
 

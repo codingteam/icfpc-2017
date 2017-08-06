@@ -4,6 +4,7 @@ import java.io.EOFException
 
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.Messages._
+import org.codingteam.icfpc2017.strategy.Strategy
 
 /**
   * Message processing cycle.
