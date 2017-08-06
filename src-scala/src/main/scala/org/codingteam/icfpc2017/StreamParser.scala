@@ -10,7 +10,7 @@ import org.json4s.jackson.JsonMethods
 /**
   * Parser of low-level messages in i/o streams.
   */
-class StreamParser private(streams: SocketLike, logFileName: Option[String]) extends StreamInterface {
+class StreamParser private(streams: SocketLike, logFileName: Option[String]) extends StreamInterface with Logging {
 
   override def readFromServer(): JValue = {
     val is = streams.inputStream
@@ -54,7 +54,7 @@ class StreamParser private(streams: SocketLike, logFileName: Option[String]) ext
       }
       sb.toString
     }
-    println("<-  " + input)
+    log.debug("<-  " + input)
     logFileName match {
       case Some(fileName) =>
         new PrintWriter(new FileOutputStream(new File(fileName), true)) {
@@ -76,7 +76,7 @@ class StreamParser private(streams: SocketLike, logFileName: Option[String]) ext
       .append(String.valueOf(str.length))
       .append(':')
       .append(str)
-    println("->  " + str)
+    log.debug("->  " + str)
     writer.flush()
   }
 

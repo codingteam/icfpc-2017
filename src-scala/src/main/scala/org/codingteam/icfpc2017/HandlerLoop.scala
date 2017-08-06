@@ -36,11 +36,10 @@ object HandlerLoop extends Logging {
 
         val response = Messages.parseServerMessageJson(request) match {
           case Some(move: MoveRq) =>
-            fullState.commonState.updateState(move.moves)
-            strategy.updateState(move.moves)
+            fullState.updateState(move.moves)
 
             val m = strategy.nextMove()
-            fullState.commonState.updateState(Seq(m))
+            fullState.updateState(Seq(m))
             m
 
           case Some(stop: Stop) =>
@@ -87,12 +86,11 @@ object HandlerLoop extends Logging {
 
           strategy.commonState = fullState.commonState
 
-          fullState.commonState.updateState(move.moves)
-          strategy.updateState(move.moves)
+          fullState.updateState(move.moves)
 
           val nextMove = strategy.nextMove()
 
-          fullState.commonState.updateState(Seq(nextMove))
+          fullState.updateState(Seq(nextMove))
 
           nextMove.state = fullState.toJson()
           server.writeToServer(nextMove.toJson())
