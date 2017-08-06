@@ -3,12 +3,12 @@ package org.codingteam.icfpc2017.strategy
 import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Messages.{Claim, Move}
-import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap, Messages, SerializationUtils}
+import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap, Messages, SerializationUtils, Logging}
 
 import scala.util.Random
 import scalax.collection.mutable.Graph
 
-class GreedyStrategy extends Strategy {
+class GreedyStrategy extends Strategy with Logging {
 
   private var _graph: GraphMap = GraphMap.fromMap(GameMap.Map.createEmpty)
 
@@ -55,7 +55,7 @@ class GreedyStrategy extends Strategy {
         case GameMap.Mine(id) => GameMap.Site(id)
       }
 
-      println(s"Our expected score: $score")
+      log.debug(s"Our expected score: $score")
       Messages.Claim(me, from, to)
     }
   }

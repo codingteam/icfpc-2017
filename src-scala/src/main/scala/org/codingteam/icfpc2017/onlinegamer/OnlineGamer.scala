@@ -5,6 +5,7 @@ import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import org.codingteam.icfpc2017.strategy.Strategy
+import org.codingteam.icfpc2017.Logging
 
 import scala.collection.mutable.ListBuffer
 
@@ -20,7 +21,7 @@ object MainActor {
 
 }
 
-class MainActor(maps: List[(StatsMap, Strategy)], name: String) extends Actor {
+class MainActor(maps: List[(StatsMap, Strategy)], name: String) extends Actor with Logging {
 
   import MainActor._
 
@@ -28,7 +29,7 @@ class MainActor(maps: List[(StatsMap, Strategy)], name: String) extends Actor {
 
   override def receive: Receive = {
     case "start" =>
-      println(s"Running for maps: ${maps}")
+      log.debug(s"Running for maps: ${maps}")
 
       if(maps.isEmpty) {
         context.system.terminate()
@@ -39,7 +40,7 @@ class MainActor(maps: List[(StatsMap, Strategy)], name: String) extends Actor {
 
             runningLoops += map.port
 
-            println(s"Running loop: ${map.port}; $runningLoops")
+            log.debug(s"Running loop: ${map.port}; $runningLoops")
 
             loopActor ! "loop"
         }
@@ -48,7 +49,7 @@ class MainActor(maps: List[(StatsMap, Strategy)], name: String) extends Actor {
     case LoopStop(port) =>
       runningLoops -= port
 
-      println(s"Loop quit: $port; $runningLoops")
+      log.debug(s"Loop quit: $port; $runningLoops")
 
       if(runningLoops.isEmpty) {
         context.system.terminate()

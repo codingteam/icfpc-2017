@@ -3,7 +3,7 @@ package org.codingteam.icfpc2017.strategy
 import java.io.{InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Messages.Move
-import org.codingteam.icfpc2017.{CommonState, Messages}
+import org.codingteam.icfpc2017.{CommonState, Messages, Logging}
 
 import scala.util.Random
 
@@ -18,7 +18,7 @@ import scala.util.Random
   * p_i  - good move probability, которую вернула стратегия i
   * S    - множество всех стратегий
   */
-class MixedStrategy(val strategies: Seq[(Double, Strategy)]) extends Strategy {
+class MixedStrategy(val strategies: Seq[(Double, Strategy)]) extends Strategy with Logging {
   require(strategies.nonEmpty)
 
   private val W = strategies.map(_._1).sum
@@ -44,7 +44,7 @@ class MixedStrategy(val strategies: Seq[(Double, Strategy)]) extends Strategy {
     for (s <- ps) {
       probability -= s._2 / W
       if (probability <= 0) {
-        println(s"Mixed: Selected strategy: ${s._1}")
+        log.debug(s"Mixed: Selected strategy: ${s._1}")
         return s._1.nextMove()
       }
     }

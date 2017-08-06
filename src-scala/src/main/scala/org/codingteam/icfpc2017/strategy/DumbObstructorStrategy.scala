@@ -1,14 +1,14 @@
 package org.codingteam.icfpc2017.strategy
 
 import org.codingteam.icfpc2017.Messages.{Move, Pass}
-import org.codingteam.icfpc2017.{GameMap, Messages}
+import org.codingteam.icfpc2017.{GameMap, Messages, Logging}
 
 import scala.util.Random
 
 /**
   * Created by portnov on 8/5/17.
   */
-class DumbObstructorStrategy extends Strategy {
+class DumbObstructorStrategy extends Strategy with Logging {
 
   private var rng = Random
 
@@ -39,7 +39,7 @@ class DumbObstructorStrategy extends Strategy {
       val score = graph.score(me)
       val our = graph.getPunterEdges(me).size
       val total = graph.graph.edges.size
-      println(s"Our expected score: $score, our edges: $our, total edges: $total")
+      log.debug(s"Our expected score: $score, our edges: $our, total edges: $total")
       Messages.Claim(me, from, to)
     }
   }

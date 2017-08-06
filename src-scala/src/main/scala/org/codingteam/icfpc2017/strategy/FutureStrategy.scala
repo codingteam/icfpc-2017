@@ -111,7 +111,7 @@ class FutureStrategy extends Strategy with Logging {
 
       moves.headOption match {
         case None =>
-          println("Can not fullfill any future")
+          log.debug("Can not fullfill any future")
           Pass(me)
         case Some(move) => move
       }

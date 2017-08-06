@@ -8,7 +8,7 @@ import scalax.collection.edge.LUnDiEdge
 import scalax.collection.mutable.Graph
 import scalax.collection.edge.LBase.LEdgeImplicits
 
-case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
+case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
 
   object PunterImplicit extends LEdgeImplicits[Option[Punter]]
   import PunterImplicit._
@@ -216,7 +216,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
   def test(): Unit = {
     val g = graph
     for (c <- g.componentTraverser()) {
-      println(c.nodes)
+      log.debug(c.nodes)
     }
   }
 }

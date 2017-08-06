@@ -4,7 +4,7 @@ import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.GameMap.Node
 import org.codingteam.icfpc2017.Messages.{Move, Pass}
-import org.codingteam.icfpc2017.{GameMap, Messages}
+import org.codingteam.icfpc2017.{GameMap, Messages, Logging}
 
 import scala.collection.mutable.{Map => MMap, Set => MSet}
 import scala.util.Random
@@ -15,7 +15,7 @@ import scalax.collection.edge.LBase.LEdgeImplicits
 /**
   * Created by portnov on 8/5/17.
   */
-class ComponentConnectorStrategy extends Strategy {
+class ComponentConnectorStrategy extends Strategy with Logging {
 
   private var rng = Random
 
@@ -30,7 +30,7 @@ class ComponentConnectorStrategy extends Strategy {
       (for (c <- subgraph.componentTraverser())
         yield c.nodes.map(_.value)
         ).toSeq.zipWithIndex
-    //println(s"Components: $components")
+    //log.debug(s"Components: $components")
     components
   }
 
@@ -51,16 +51,16 @@ class ComponentConnectorStrategy extends Strategy {
             (n1Opt, n2Opt) match {
               case (Some(n1), Some(n2)) =>
                 (n1 shortestPathTo n2) match {
-                  case None => // println(s"No way: $n1 - $n2")
+                  case None => // log.debug(s"No way: $n1 - $n2")
                   case Some(path) =>
                     if (path.length < bestRho) {
                       bestPath = Some(path)
                       bestRho = path.length
                       selectedPair = Some(node1, node2)
-                      //println(s"Found better pair: $node1 - $node2 with distance $bestRho")
+                      //log.debug(s"Found better pair: $node1 - $node2 with distance $bestRho")
                     }
                 }
-              case _ => // println(s"Nodes not in free subgraph: $node1 - $node2")
+              case _ => // log.debug(s"Nodes not in free subgraph: $node1 - $node2")
             }
           }
         })
@@ -68,7 +68,7 @@ class ComponentConnectorStrategy extends Strategy {
 
     selectedPair match {
       case None => {
-        println(s"Can not select a pair of nodes to connect components #${component1._2} - #${component2._2}")
+        log.debug(s"Can not select a pair of nodes to connect components #${component1._2} - #${component2._2}")
         None
       }
       case Some(bestNodes) =>
@@ -78,7 +78,7 @@ class ComponentConnectorStrategy extends Strategy {
           case (Some(node1), Some(node2)) =>
             bestPath match {
               case None => {
-                println(s"Both selected nodes $node1, $node2 belong to free subgraph, but there is no free way between them.")
+                log.debug(s"Both selected nodes $node1, $node2 belong to free subgraph, but there is no free way between them.")
                 None
               }
               case Some(path) => {
@@ -86,7 +86,7 @@ class ComponentConnectorStrategy extends Strategy {
               }
             }
           case _ => {
-            println(s"No ways to connect components #${component1._2} - #${component2._2} found, this is odd.")
+            log.debug(s"No ways to connect components #${component1._2} - #${component2._2} found, this is odd.")
             None
           }
         }
@@ -95,20 +95,20 @@ class ComponentConnectorStrategy extends Strategy {
 
   override def nextMove(): Move = {
     if (noPaths) {
-      println("Last time there were no paths between components, i think they could not appear now.")
+      log.debug("Last time there were no paths between components, i think they could not appear now.")
       return Pass(me)
     }
     val g = graph.graph
     val freeSubgraph = g filter g.having(edge = {
       edge: g.EdgeT => edge.label == None
     })
-    //println(s"Free subgraph: $freeSubgraph")
+    //log.debug(s"Free subgraph: $freeSubgraph")
 
     val components = getComponents()
     val componentsNumber = components.size
-    /*println(s"Found components: ${components.size}")
+    /*log.debug(s"Found components: ${components.size}")
     for (c <- components) {
-      println(c)
+      log.debug(c)
     }*/
 
     var bestPath : Option[Graph[Node, LUnDiEdge]#Path] = None
@@ -138,16 +138,16 @@ class ComponentConnectorStrategy extends Strategy {
 
       bestPath match {
         case None => {
-          println("Component connector can not find good move")
+          log.debug("Component connector can not find good move")
           noPaths = true
           Pass(me)
         }
         case Some(path) => {
           assert(!path.edges.isEmpty)
 
-          println(s"Found path between components #${bestComponentIdxs}:  ${path.nodes.head} - ${path.nodes.last} :: ${path.length}")
+          log.debug(s"Found path between components #${bestComponentIdxs}:  ${path.nodes.head} - ${path.nodes.last} :: ${path.length}")
           if (path.length == 1) {
-            println("Will connect two components.")
+            log.debug("Will connect two components.")
           }
 
           val edge = path.edges.head
@@ -166,12 +166,12 @@ class ComponentConnectorStrategy extends Strategy {
           val score = graph.score(me)
           val our = graph.getPunterEdges(me).size
           val total = graph.graph.edges.size
-          println(s"Our expected score: $score, our edges: $our, total edges: $total")
+          log.debug(s"Our expected score: $score, our edges: $our, total edges: $total")
           Messages.Claim(me, from, to)
         }
       }
     } else {
-      println("There is only one component, nothing to connect.")
+      log.debug("There is only one component, nothing to connect.")
       Pass(me)
     }
   }
@@ -185,10 +185,10 @@ class ComponentConnectorStrategy extends Strategy {
         edge: g.EdgeT => (edge.label != None) && (edge.label == me)
       })
       val componentsNumber = getComponents().size
-      println(s"Found components: ${componentsNumber}")
+      log.debug(s"Found components: ${componentsNumber}")
       if (componentsNumber > 1) {
         /*for (c <- components) {
-          println(c)
+          log.debug(c)
         }*/
         componentsNumber
       } else {

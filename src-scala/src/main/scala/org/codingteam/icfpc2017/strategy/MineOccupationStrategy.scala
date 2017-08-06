@@ -2,7 +2,7 @@ package org.codingteam.icfpc2017.strategy
 
 import org.codingteam.icfpc2017.GameMap.Mine
 import org.codingteam.icfpc2017.Messages.{Move, Pass}
-import org.codingteam.icfpc2017.{GameMap, Messages}
+import org.codingteam.icfpc2017.{GameMap, Messages, Logging}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
@@ -10,7 +10,7 @@ import scala.util.Random
 /**
   * Created by portnov on 8/6/17.
   */
-class MineOccupationStrategy extends Strategy {
+class MineOccupationStrategy extends Strategy with Logging {
 
   private var rng = Random
 
@@ -48,7 +48,7 @@ class MineOccupationStrategy extends Strategy {
     }
 
     if (candidates.isEmpty) {
-      println("Mine occupation strategy cant find a good move.")
+      log.debug("Mine occupation strategy cant find a good move.")
       Pass(me)
     } else {
       val index = rng.nextInt(candidates.size)
@@ -69,7 +69,7 @@ class MineOccupationStrategy extends Strategy {
       val score = graph.score(me)
       val our = graph.getPunterEdges(me).size
       val total = graph.graph.edges.size
-      println(s"Our expected score: $score, our edges: $our, total edges: $total")
+      log.debug(s"Our expected score: $score, our edges: $our, total edges: $total")
       Messages.Claim(me, from, to)
     }
   }
@@ -92,7 +92,7 @@ class MineOccupationStrategy extends Strategy {
         if (noMyEdges) {
           val freeEdges = mineNode.edges.filter(_.label == None)
           if (! freeEdges.isEmpty) {
-            //println(s"Free mine: $mineNode, edges: ${mineNode.edges}")
+            //log.debug(s"Free mine: $mineNode, edges: ${mineNode.edges}")
             freeMines += 1
           }
         }
@@ -112,13 +112,13 @@ class MineOccupationStrategy extends Strategy {
     }
 
     if (freeMines > 0) {
-      println(s"There are totally free mines: $freeMines.")
+      log.debug(s"There are totally free mines: $freeMines.")
       5.0
     } else if (underoccupiedMines > 0) {
-      println(s"There are mines that are not fully occupied by us yet: ${underoccupiedMines}.")
+      log.debug(s"There are mines that are not fully occupied by us yet: ${underoccupiedMines}.")
       0.5
     } else {
-      println("All mines are already occupied.")
+      log.debug("All mines are already occupied.")
       0
     }
   }
