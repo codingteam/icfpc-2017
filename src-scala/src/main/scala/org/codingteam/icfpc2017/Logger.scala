@@ -33,7 +33,7 @@ trait LogbackLogger extends Logger[SLF4Logger] {
 
   def loggerName: Option[String] = None
 
-  def fromFactory = LoggerFactory.getLogger(this.getClass.getCanonicalName)
+  def fromFactory = LoggerFactory.getLogger(this.getClass.getName)
 
   override val underlying = loggerName match {
     case Some(ln) => Appender(ln)
