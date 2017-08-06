@@ -67,7 +67,7 @@ class ComponentConnectorStrategy extends Strategy with Logging {
 
     selectedPair match {
       case None => {
-        log.debug(s"Can not select a pair of nodes to connect components #${component1._2} - #${component2._2}")
+        // log.debug(s"Can not select a pair of nodes to connect components #${component1._2} - #${component2._2}")
         None
       }
       case Some(bestNodes) =>
