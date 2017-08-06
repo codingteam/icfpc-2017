@@ -60,7 +60,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
       0
     } else {
       // println(s"Distance from $source to $target, graph: $g")
-      if ((g.nodes.contains(source)) && (g.nodes.contains(target))) {
+      if ((g.contains(source)) && (g.contains(target))) {
         val sourceNode = g get source
         val targetNode = g get target
 
@@ -98,7 +98,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
 
   def hasPath(source: Node, target: Node) : Boolean = {
     val g = graph
-    if ((g.nodes.contains(source)) && (g.nodes.contains(target))) {
+    if ((g.contains(source)) && (g.contains(target))) {
       val sourceNode = g get source
       val targetNode = g get target
 
