@@ -8,7 +8,7 @@ import org.codingteam.icfpc2017.Messages._
 /**
   * Message processing cycle.
   */
-object HandlerLoop {
+object HandlerLoop extends Logging {
 
   def runLoop(server: StreamInterface, strategy: Strategy, name: String): Unit = {
     try {
@@ -39,7 +39,7 @@ object HandlerLoop {
             strategy.nextMove()
           }
           case Some(stop: Stop) => {
-            println("Our score: " + stop.getScore(me))
+            log.info("Our score: " + stop.getScore(me))
             return
           }
           case _ => Pass(me)
@@ -49,7 +49,7 @@ object HandlerLoop {
 
     } catch {
       case e: EOFException =>
-        println("Exit during EOF from server")
+        log.error("Exit during EOF from server", e)
     } finally {
       server.close()
     }

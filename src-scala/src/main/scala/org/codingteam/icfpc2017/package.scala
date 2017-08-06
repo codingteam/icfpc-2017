@@ -68,6 +68,7 @@ package object icfpc2017 {
     def close(): Unit
   }
 
+  /** Wrapper for in/out streams */
   trait SocketLike extends AutoCloseable {
 
     def inputStream: InputStream
