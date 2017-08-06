@@ -12,7 +12,9 @@ import org.codingteam.icfpc2017.futures.RandomFutureGenerator
   */
 object HandlerLoop extends Logging {
 
-  val futureGeneratorDistance = 3
+  // FUTURES
+  val futureGeneratorDistance = 2
+  val futuresCount = 2
 
   def runLoop(server: StreamInterface, strategy: Strategy, name: String): Unit = {
     try {
@@ -26,7 +28,7 @@ object HandlerLoop extends Logging {
       val fullState = Messages.parseServerMessageJson(setupRequest) match {
         case Some(setup: SetupRq) =>
           val punter = Punter(setup.punter)
-          val futureGenerator = RandomFutureGenerator(setup.map, futureGeneratorDistance)
+          val futureGenerator = RandomFutureGenerator(setup.map, futureGeneratorDistance, futuresCount)
           val futures = setup.settings match {
             case Some(Settings(true)) => Some(futureGenerator.generate())
             case _ => None
@@ -86,7 +88,7 @@ object HandlerLoop extends Logging {
       Messages.parseServerMessageJson(request) match {
         case Some(setup: SetupRq) =>
           // -- realy fucking imperative code here --
-          val futureGenerator = RandomFutureGenerator(setup.map, futureGeneratorDistance)
+          val futureGenerator = RandomFutureGenerator(setup.map, futureGeneratorDistance, futuresCount)
           val futures = setup.settings match {
             case Some(Settings(true)) => Some(futureGenerator.generate())
             case _ => None

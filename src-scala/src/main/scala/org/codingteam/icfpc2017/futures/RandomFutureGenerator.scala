@@ -12,7 +12,7 @@ import scalax.collection.edge.LUnDiEdge
 import scalax.collection.mutable.Graph
 import scalax.collection.edge.LBase.LEdgeImplicits
 
-case class RandomFutureGenerator(val map: Map, val maxDistance: Int) {
+case class RandomFutureGenerator(val map: Map, val maxDistance: Int, val count: Int) {
   private var rng = Random
 
   def generate(): List[Future] = {
@@ -20,7 +20,7 @@ case class RandomFutureGenerator(val map: Map, val maxDistance: Int) {
     val mineNodes = g.nodes.filter {
       node: Graph[Node, LUnDiEdge]#NodeT => node.value.isInstanceOf[Mine]
     }
-    mineNodes.flatMap({
+    mineNodes.take(count).flatMap({
       mineNode: g.NodeT => {
         //val availableNodes = mineNode.withSubgraph(nodes = ! _.value.isInstanceOf[Mine]).withMaxDepth(maxDistance)
         val availableNodes = mineNode.withMaxDepth(maxDistance)

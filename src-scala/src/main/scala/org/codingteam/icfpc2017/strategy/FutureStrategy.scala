@@ -43,14 +43,14 @@ class FutureStrategy extends Strategy with Logging {
           val ourNodes = mineNode.withSubgraph(edges = _.label == me)
           val ourSites = (for {node <- ourNodes} yield node.value).toSet
           if (ourSites.contains(Site(future.targetId)) && ourSites.contains(mineNode)) {
-            println(s"Future is already fullfilled: $future.")
+            //println(s"Future is already fullfilled: $future.")
             None
           } else {
             val targetSite = Site(future.targetId)
             //val targetNode = g get targetSite
             (freeSubgraph find targetSite) match {
               case None =>
-                println(s"Future can not be fullfilled: $future. All approaches to it are claimed by other punters.")
+                //println(s"Future can not be fullfilled: $future. All approaches to it are claimed by other punters.")
                 None
               case Some(targetNode) => {
 
@@ -61,7 +61,7 @@ class FutureStrategy extends Strategy with Logging {
                   gNode: g.NodeT =>
                     freeSubgraph find (gNode.value) match {
                       case None =>
-                        println(s"Future can not be fullfilled: $future. All firtst steps to it are claimed by other punters.")
+                        //println(s"Future can not be fullfilled: $future. All firtst steps to it are claimed by other punters.")
                         None
                       case Some(node) =>
                         (node shortestPathTo targetNode) match {
@@ -78,7 +78,7 @@ class FutureStrategy extends Strategy with Logging {
 
                 bestPath match {
                   case None => {
-                    println(s"Future can not be fullfilled: $future. Threre is no free way.")
+                    //println(s"Future can not be fullfilled: $future. Threre is no free way.")
                     None
                   }
                   case Some(path) => {
@@ -135,7 +135,7 @@ class FutureStrategy extends Strategy with Logging {
   override def goodMoveProbability(): Double = {
     val (fullfilled, total) = commonState.getFutureStats
     if (fullfilled < total) {
-      5
+      (total - fullfilled) / 2.0
     } else {
       0
     }
