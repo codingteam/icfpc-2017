@@ -40,7 +40,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
     graph -= edge
 
     implicit val factory = scalax.collection.edge.LUnDiEdge
-    graph.addLEdge(source, target)(punter)
+    graph.addLEdge(source, target)(Some(punter))
   }
 
   def removeEdge(source: Node, target: Node) : Unit = {

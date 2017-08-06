@@ -137,7 +137,7 @@ object SerializationUtils {
         if (edge.label == None) {
           -1
         } else {
-          edge.label.asInstanceOf[Punter].id.toInt
+          edge.label.asInstanceOf[Some[Punter]] map (_.id.toInt) getOrElse -1
         }
       os.writeInt(punterId)
     }
