@@ -8,14 +8,12 @@ import org.json4s.jackson.JsonMethods
 
 
 /**
-  * TCP handler.
+  * Parser of low-level messages in i/o streams.
   */
-class TcpInterface private(socket: Socket) extends StreamInterface {
-
-  // TODO: copy this impl to generic handler.
+class StreamParser private(streams: SocketLike, logFileName: Option[String]) extends StreamInterface with Logging {
 
   override def readFromServer(): JValue = {
-    val is = socket.getInputStream
+    val is = streams.inputStream
 
     def readByte(): Char = {
       val b = is.read()
@@ -40,8 +38,12 @@ class TcpInterface private(socket: Socket) extends StreamInterface {
     }
 
     val n = getSize()
-    var array: Array[Byte] = new Array[Byte](n)
-    is.read(array)
+    val array: Array[Byte] = new Array[Byte](n)
+    var alreadyRead = 0
+    while (alreadyRead < n) {
+      alreadyRead += is.read(array, alreadyRead, n - alreadyRead)
+    }
+
     val input = {
       val reader = new InputStreamReader(new ByteArrayInputStream(array), "UTF-8")
       val sb = new java.lang.StringBuilder
@@ -52,29 +54,43 @@ class TcpInterface private(socket: Socket) extends StreamInterface {
       }
       sb.toString
     }
-    println("<-  " + input)
+    log.debug("<-  " + input)
+    logFileName match {
+      case Some(fileName) =>
+        new PrintWriter(new FileOutputStream(new File(fileName), true)) {
+          write(input)
+          close()
+        }
+      case None => ()
+    }
+
     import org.json4s._
     JsonMethods.parse(input)
   }
 
   override def writeToServer(data: JValue): Unit = {
-    val os = socket.getOutputStream
+    val os = streams.outputStream
     val writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"), 1024 * 1024)
     val str = JsonMethods.pretty(data)
     writer
       .append(String.valueOf(str.length))
       .append(':')
       .append(str)
-    println("->  " + str)
+    log.debug("->  " + str)
     writer.flush()
   }
 
-  override def close(): Unit = socket.close()
+  override def close(): Unit = streams.close()
 }
 
-object TcpInterface {
-  def connect(server: String, port: Int): TcpInterface = {
+object StreamParser {
+  def connect(server: String, port: Int, log: Option[String]): StreamParser = {
     val socket = new Socket(server, port)
-    new TcpInterface(socket)
+    new StreamParser(SocketLike.fromSocket(socket), log)
   }
+
+  def connectToStdInOut(log: Option[String]): StreamParser = {
+    new StreamParser(SocketLike.fromStdInOut(), log)
+  }
+
 }

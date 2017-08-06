@@ -1,0 +1,27 @@
+
+*** CodingTeam's punter
+
+! It uses hybrid strategies, don`t try it in (your) yard !
+
+* CodingTeam
+
+codingteam@conference.jabber.ru
+
+github.com/codingteam
+
+* Authors
+
+Akon32
+ForNeVeR
+grouzen
+Minoru
+nightmare932
+portnov
+
+* Building
+```
+cd scala-source
+sbt deploy
+```
+And jar will be created in `deploy` directory.
+

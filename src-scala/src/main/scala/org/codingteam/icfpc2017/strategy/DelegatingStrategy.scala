@@ -1,9 +1,9 @@
-package org.codingteam.icfpc2017
+package org.codingteam.icfpc2017.strategy
 
-import org.codingteam.icfpc2017.GameMap.Map
+import java.io.{InputStream, OutputStream}
+
+import org.codingteam.icfpc2017.CommonState
 import org.codingteam.icfpc2017.Messages.Move
-import org.codingteam.icfpc2017.Common.Punter
-import org.json4s.JsonAST.{JObject, JValue}
 
 import scala.util.Random
 
@@ -16,14 +16,9 @@ class DelegatingStrategy(val strategies: Seq[Strategy]) extends Strategy {
 
   private val rnd = new Random()
 
-  override def map_=(map: Map): Unit = {
-    super.map_=(map)
-    strategies foreach (_.map_=(map))
-  }
-
-  override def me_=(punter: Punter): Unit = {
-    super.me_=(punter)
-    strategies foreach (_.me = punter)
+  override def commonState_=(s: CommonState): Unit = {
+    super.commonState_=(s)
+    strategies foreach (_.commonState = s)
   }
 
   override def nextMove(): Move = {
@@ -42,12 +37,11 @@ class DelegatingStrategy(val strategies: Seq[Strategy]) extends Strategy {
 
   override def goodMoveProbability(): Double = 0.95 // no ideas about actual value in this case.
 
-  override def state: JValue = {
-    // TODO: implement this.
-    JObject()
+  override def read(is: InputStream): Unit = {
+    strategies foreach (_.read(is))
   }
 
-  override def state_=(s: JValue): Unit = {
-    // TODO: implement this.
+  override def write(os: OutputStream): Unit = {
+    strategies foreach (_.write(os))
   }
 }

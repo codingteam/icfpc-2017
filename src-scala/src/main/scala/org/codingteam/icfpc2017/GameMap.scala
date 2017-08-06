@@ -14,14 +14,15 @@ object GameMap {
 
   type SiteId = BigInt
 
-  abstract class Node
+  abstract sealed class Node {
+    def id: SiteId
+  }
 
-  case class Site(id: SiteId) extends Node
+  case class Site(override val id: SiteId) extends Node
 
-  case class Mine(id: SiteId) extends Node
+  case class Mine(override val id: SiteId) extends Node
 
-  object SiteImplicit extends LEdgeImplicits[Option[Punter]]
-  import SiteImplicit._
+  object SiteImplicit extends LEdgeImplicits[Punter]
 
   case class River(source: SiteId, target: SiteId) {
     def toEdge(map: Map): LUnDiEdge[Node] = {
@@ -44,14 +45,16 @@ object GameMap {
     def createEmpty = new Map(IndexedSeq(), IndexedSeq(), IndexedSeq())
   }
 
-  class Map(var sites: IndexedSeq[Site],
-            var rivers: IndexedSeq[River],
-            var mines: IndexedSeq[SiteId]) {
+  class Map(val sites: IndexedSeq[Site],
+            val rivers: IndexedSeq[River],
+            val mines: IndexedSeq[SiteId]) {
 
     var siteMap = sites.map(site => (site.id, siteToNode(site))).toMap
 
     def siteToNode(site: Site): Node = {
-      if (mines.contains(site.id)) {
+      val isMine = mines.contains(site.id)
+      //println(s"siteToNode: $site ${this.mines} ${isMine}")
+      if (isMine) {
         Mine(site.id)
       } else {
         site
