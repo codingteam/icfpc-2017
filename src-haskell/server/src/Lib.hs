@@ -5,15 +5,17 @@ module Lib
 import Network.Socket
 import System.IO
 
-import Control.Monad (forM, forM_)
+import Control.Monad (forM, forM_, void)
 import Data.Aeson
 import Data.Char
+import Data.List (zip4)
 import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString.Lazy.Char8 as C8
 
 import Types
 
 runServer :: GameMap -> String -> Int -> IO ()
-runServer map port numberOfPlayers = withSocketsDo $ do
+runServer gameMap port numberOfPlayers = withSocketsDo $ do
   addrinfos <- getAddrInfo
               (Just (defaultHints {addrFlags = [AI_PASSIVE]}))
               Nothing (Just port)
@@ -29,17 +31,25 @@ runServer map port numberOfPlayers = withSocketsDo $ do
     return handle
 
   forM_ handles exchangeGreetings
+  mapM_
+    (uncurry4 doSetup)
+    (zip4
+      [0..]
+      (repeat numberOfPlayers)
+      (repeat gameMap)
+      handles)
 
   forM_ handles hClose
 
-exchangeGreetings :: Handle -> IO ()
-exchangeGreetings handle = do
+uncurry4 :: (a -> b -> c -> d -> e) -> ((a, b, c, d) -> e)
+uncurry4 f (m, n, l, p) = f m n l p
+
+getMessage :: Handle -> IO ClientMessage
+getMessage handle = do
   len <- getMessageLength 0
   message <- B.hGet handle len
-  let Just greeting = decode message :: Maybe ClientMessage
-  let CHelloRq hello = greeting
-  let response = SHelloRs $ HelloRs $ hrqName hello
-  B.hPut handle (encode response)
+  let Just msg = decode message :: Maybe ClientMessage
+  return msg
 
   where
   getMessageLength :: Int -> IO Int
@@ -48,3 +58,22 @@ exchangeGreetings handle = do
     if char == ':'
       then return n
       else getMessageLength (n*10 + (ord char - ord '0'))
+
+sendMessage :: Handle -> ServerMessage -> IO ()
+sendMessage handle message = do
+  let serialized = encode message
+  let len = C8.pack $ show $ B.length serialized
+  B.hPut handle $ B.concat [ len, C8.singleton ':', serialized ]
+
+exchangeGreetings :: Handle -> IO ()
+exchangeGreetings handle = do
+  greeting <- getMessage handle
+  let CHelloRq hello = greeting
+  let response = SHelloRs $ HelloRs $ hrqName hello
+  sendMessage handle response
+
+doSetup :: Int -> Int -> GameMap -> Handle -> IO ()
+doSetup punterId puntersCount gameMap handle = do
+  let message = SSetupRq $ SetupRq punterId puntersCount gameMap
+  sendMessage handle message
+  void $ getMessage handle

@@ -29,13 +29,18 @@ instance FromJSON ServerMessage where
 
 instance ToJSON ServerMessage where
   toJSON (SHelloRs hello) = toJSON hello
+  toJSON (SSetupRq setup) = toJSON setup
 
 data ClientMessage =
   CHelloRq HelloRq
+  | CSetupRs SetupRs
   deriving (Eq, Show)
 
 instance FromJSON ClientMessage where
-  parseJSON x = CHelloRq <$> parseJSON x
+  parseJSON x@(Object v) = do
+    if "me" `H.member` v
+      then CHelloRq <$> parseJSON x
+      else CSetupRs <$> parseJSON x
 
 data HelloRq = HelloRq {hrqName :: PunterName}
   deriving (Eq, Show)
@@ -67,6 +72,9 @@ instance FromJSON Site where
     id <- v .: "id"
     return $ Site id
 
+instance ToJSON Site where
+  toJSON (Site id) = object ["id" .= id]
+
 data River = River {source :: SiteId, target :: SiteId}
   deriving (Eq, Show)
 
@@ -75,6 +83,13 @@ instance FromJSON River where
     src <- v .: "source"
     dst <- v .: "target"
     return $ River src dst
+
+instance ToJSON River where
+  toJSON (River source target) =
+    object [
+      "source" .= source
+    , "target" .= target
+    ]
 
 data GameMap = GameMap {gmSites :: [Site], gmRivers :: [River], gmMines :: [SiteId]}
   deriving (Eq, Show)
@@ -86,6 +101,14 @@ instance FromJSON GameMap where
     mines <- v .: "mines"
     return $ GameMap sites rivers mines
 
+instance ToJSON GameMap where
+  toJSON (GameMap sites rivers mines) =
+    object [
+      "sites" .= sites
+    , "rivers" .= rivers
+    , "mines" .= mines
+    ]
+
 data SetupRq = SetupRq {srqPunter :: PunterId, srqPunters :: Int, srqMap :: GameMap}
   deriving (Eq, Show)
 
@@ -96,11 +119,24 @@ instance FromJSON SetupRq where
     map <- v .: "map"
     return $ SetupRq punter punters map
 
+instance ToJSON SetupRq where
+  toJSON (SetupRq id punters map) =
+    object [
+      "punter" .= id
+    , "punters" .= punters
+    , "map" .= map
+    ]
+
 data SetupRs = SetupRs {srsPunter :: PunterId}
   deriving (Eq, Show)
 
 instance ToJSON SetupRs where
   toJSON (SetupRs punter) = object ["ready" .= punter]
+
+instance FromJSON SetupRs where
+  parseJSON (Object v) = do
+    punterId <- v .: "ready"
+    return $ SetupRs punterId
 
 data Move =
   Claim {claimPunter :: PunterId, claimSource :: SiteId, claimTarget :: SiteId}
