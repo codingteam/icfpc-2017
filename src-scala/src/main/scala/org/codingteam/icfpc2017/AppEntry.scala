@@ -83,7 +83,7 @@ object AppEntry extends App {
         (2.0, new GreedyStrategy()),
         (1.0, new ComponentConnectorStrategy()),
         (1.0, new DumbObstructorStrategy()),
-        (1.0, new RandomConnectorStrategy())))
+        (0.5, new RandomConnectorStrategy())))
       case _ => throw new Exception("unsupported name: " + name)
     }
   }
