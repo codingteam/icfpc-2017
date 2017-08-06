@@ -76,6 +76,14 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
 
   private var distanceCache : MMap[(Node,Node), Int] = MMap.empty
 
+  def getDistanceCacheCopy() : MMap[(Node, Node), Int] = {
+    return distanceCache.clone()
+  }
+
+  def setDisatanceCache(cache: MMap[(Node, Node), Int]): Unit = {
+    distanceCache = cache
+  }
+
   def distance(source: Node, target: Node): Int = {
     distanceCache.get((source, target)) match {
       case Some(d) => d

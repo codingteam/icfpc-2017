@@ -36,6 +36,7 @@ class GreedyStrategy extends Strategy {
       var score = 0
       for (edge <- neighbours) {
         var hypothesis = GraphMap(Graph.from(graph.graph.nodes, graph.graph.edges))
+        hypothesis.setDisatanceCache(graph.getDistanceCacheCopy())
         hypothesis.mark(edge._1.value, edge._2.value, me)
         val newScore = hypothesis.score(me)
         if (newScore > score) {
