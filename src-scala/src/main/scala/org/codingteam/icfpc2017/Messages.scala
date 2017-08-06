@@ -2,6 +2,7 @@ package org.codingteam.icfpc2017
 
 import org.codingteam.icfpc2017.Common._
 import org.codingteam.icfpc2017.GameMap._
+import org.codingteam.icfpc2017.futures.Future
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
@@ -37,7 +38,9 @@ object Messages {
     }
   }
 
-  case class SetupRq(punter: BigInt, punters: Int, map: Map) extends Message
+  case class Settings(futures: Boolean)
+
+  case class SetupRq(punter: BigInt, punters: Int, map: Map, settings: Option[Settings]) extends Message
 
   object SetupRq {
     def unapply(json: JValue): Option[SetupRq] = {
@@ -45,12 +48,18 @@ object Messages {
     }
   }
 
-  case class SetupRs(punter: Punter, state: JValue = JNothing) extends Message with Serializable {
+  case class SetupRs(punter: Punter, futures: Option[List[Future]], state: JValue = JNothing) extends Message with Serializable {
+    def futuresJson(): JValue = {
+      futures match {
+        case None => JNothing
+        case Some(list) => list.map(_.toJson)
+      }
+    }
     def toJson(): JObject = {
       if (state == JNothing)
-        "ready" -> punter.id
+        JObject("ready" -> punter.id, "futures" -> futuresJson)
       else
-        JObject("ready" -> punter.id, "state" -> state)
+        JObject("ready" -> punter.id, "state" -> state, "futures" -> futuresJson)
     }
   }
 

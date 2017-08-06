@@ -3,11 +3,14 @@ package org.codingteam.icfpc2017
 import java.io.{DataInputStream, DataOutputStream}
 
 import org.codingteam.icfpc2017.Common.Punter
+import org.codingteam.icfpc2017.Messages.Settings
 import org.codingteam.icfpc2017.GameMap.{Mine, Node, River, Site, SiteId}
 
 import scala.collection.mutable
 import scalax.collection.edge.LUnDiEdge
 import scalax.collection.mutable.Graph
+
+
 
 /**
   * Utilities for serialization.
@@ -23,6 +26,24 @@ object SerializationUtils {
     map.rivers foreach { r =>
       os.writeInt(r.source.toInt)
       os.writeInt(r.target.toInt)
+    }
+  }
+
+  def writeSettings(settings : Option[Settings], os: DataOutputStream): Unit = {
+    val present = settings.isDefined
+    os.writeBoolean(present)
+    if (present) {
+      os.writeBoolean(settings.get.futures)
+    }
+  }
+
+  def readSettings(is: DataInputStream): Option[Settings] = {
+    val present = is.readBoolean()
+    if (present) {
+      val futures = is.readBoolean()
+      Some(Settings(futures))
+    } else {
+      None
     }
   }
 

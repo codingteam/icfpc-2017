@@ -5,11 +5,14 @@ import java.io.EOFException
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.Messages._
 import org.codingteam.icfpc2017.strategy.Strategy
+import org.codingteam.icfpc2017.futures.RandomFutureGenerator
 
 /**
   * Message processing cycle.
   */
 object HandlerLoop extends Logging {
+
+  val futureGeneratorDistance = 3
 
   def runLoop(server: StreamInterface, strategy: Strategy, name: String): Unit = {
     try {
@@ -23,9 +26,16 @@ object HandlerLoop extends Logging {
       val fullState = Messages.parseServerMessageJson(setupRequest) match {
         case Some(setup: SetupRq) =>
           val punter = Punter(setup.punter)
-          val rs = SetupRs(punter)
+          val futureGenerator = RandomFutureGenerator(setup.map, futureGeneratorDistance)
+          val futures = setup.settings match {
+            case Some(Settings(true)) => Some(futureGenerator.generate())
+            case _ => None
+          }
+          log.debug(s"Generated futures: $futures.")
+          val rs = SetupRs(punter, futures)
+          val state = new FullState(CommonState(setup.map, setup.punter, setup.punters, setup.settings), strategy)
           server.writeToServer(rs.toJson())
-          new FullState(CommonState(setup.map, setup.punter, setup.punters), strategy)
+          state
         case _ =>
           new FullState(new CommonState, strategy)
       }
@@ -73,10 +83,15 @@ object HandlerLoop extends Logging {
       Messages.parseServerMessageJson(request) match {
         case Some(setup: SetupRq) =>
           // -- realy fucking imperative code here --
-          val fullState = new FullState(CommonState(setup.map, setup.punter, setup.punters), strategy)
+          val fullState = new FullState(CommonState(setup.map, setup.punter, setup.punters, setup.settings), strategy)
           strategy.commonState = fullState.commonState
 
-          val rs = SetupRs(fullState.commonState.me, fullState.toJson())
+          val futureGenerator = RandomFutureGenerator(setup.map, futureGeneratorDistance)
+          val futures = setup.settings match {
+            case Some(Settings(true)) => Some(futureGenerator.generate())
+            case _ => None
+          }
+          val rs = SetupRs(fullState.commonState.me, futures, fullState.toJson())
           server.writeToServer(rs.toJson())
 
         case Some(move: MoveRq) =>
