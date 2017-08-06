@@ -35,7 +35,7 @@ class CommonState {
     me = Punter(data.readLong())
     punterCount = data.readInt()
     map = SerializationUtils.readMap(data)
-    SerializationUtils.readGraph(graph, data)
+    graph = SerializationUtils.readGraph(data)
   }
 
   def write(os: OutputStream): Unit = {
