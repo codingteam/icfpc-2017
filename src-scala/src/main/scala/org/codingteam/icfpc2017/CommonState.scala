@@ -4,6 +4,8 @@ import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.Messages.{Claim, Move, Settings}
+import org.codingteam.icfpc2017.GameMap.{SiteId, Site}
+import org.codingteam.icfpc2017.futures.Future
 
 /**
   * Common state of all strategies.
@@ -15,13 +17,15 @@ class CommonState {
   var map: GameMap.Map = GameMap.Map.createEmpty
   var graph: GraphMap = GraphMap.fromMap(map)
   var settings : Option[Settings] = Some(Settings(false))
+  var futures: Option[List[Future]] = None
 
-  def init(map: GameMap.Map, punterId: BigInt, punterCount: Int, settings: Option[Settings]): Unit = {
+  def init(map: GameMap.Map, punterId: BigInt, punterCount: Int, settings: Option[Settings], futures: Option[List[Future]]): Unit = {
     this.map = map
     graph = GraphMap fromMap map
     me = Punter(punterId)
     this.punterCount = punterCount
     this.settings = settings
+    this.futures = futures
   }
 
   def updateState(moves: Seq[Move]): Unit = {
@@ -32,10 +36,33 @@ class CommonState {
     }
   }
 
+  def getFullfilledFutures(): Iterable[Future] = {
+    // var result: Seq[Future] = Seq()
+    if (futures.isDefined) {
+      for {future <- futures.get
+           if (graph.hasPath(map.siteToNode(Site(future.sourceId)), map.siteToNode(Site(future.targetId))))
+      } yield future
+    } else {
+      List()
+    }
+  }
+
+  def getFutureStats(): (Int, Int) = {
+    futures match {
+      case None => (0, 0)
+      case Some(list) => {
+        val fullfilled = getFullfilledFutures().size
+        val total = futures.get.size
+        (fullfilled, total)
+      }
+    }
+  }
+
   def read(is: InputStream): Unit = {
     val data = new DataInputStream(is)
     me = Punter(data.readLong())
     punterCount = data.readInt()
+    futures = SerializationUtils.readFutures(data)
     settings = SerializationUtils.readSettings(data)
     map = SerializationUtils.readMap(data)
     graph = SerializationUtils.readGraph(data)
@@ -45,6 +72,7 @@ class CommonState {
     val data = new DataOutputStream(os)
     data.writeLong(me.id.toLong)
     data.writeInt(punterCount)
+    SerializationUtils.writeFutures(futures, data)
     SerializationUtils.writeSettings(settings, data)
     SerializationUtils.writeMap(map, data)
     SerializationUtils.writeGraph(graph, data)
@@ -52,9 +80,9 @@ class CommonState {
 }
 
 object CommonState {
-  def apply(map: GameMap.Map, punterId: BigInt, punterCount: Int, settings: Option[Settings]): CommonState = {
+  def apply(map: GameMap.Map, punterId: BigInt, punterCount: Int, settings: Option[Settings], futures: Option[List[Future]]): CommonState = {
     val r = new CommonState
-    r.init(map, punterId, punterCount, settings)
+    r.init(map, punterId, punterCount, settings, futures)
     r
   }
 }

@@ -13,6 +13,8 @@ import scalax.collection.mutable.Graph
 import scalax.collection.edge.LBase.LEdgeImplicits
 
 case class RandomFutureGenerator(val map: Map, val maxDistance: Int) {
+  private var rng = Random
+
   def generate(): List[Future] = {
     val g = map.toGraph
     val mineNodes = g.nodes.filter {
@@ -23,14 +25,16 @@ case class RandomFutureGenerator(val map: Map, val maxDistance: Int) {
         //val availableNodes = mineNode.withSubgraph(nodes = ! _.value.isInstanceOf[Mine]).withMaxDepth(maxDistance)
         val availableNodes = mineNode.withMaxDepth(maxDistance)
         //println(s"Mine ${mineNode.value} available nodes: ${availableNodes.toList}")
-        availableNodes.filterNot(_.value.isInstanceOf[Mine]).headOption match {
-          case None => None
-          case Some(head) => {
-            val site = head.value
-            Some(Future(mineNode.value.id, site.id))
-          }
+        val availableSites = availableNodes.filterNot(_.value.isInstanceOf[Mine])
+        if (availableSites.isEmpty) {
+          None
+        } else {
+          val index = rng.nextInt(availableSites.size)
+          val site = availableSites.toIndexedSeq(index)
+          Some(Future(mineNode.value.id, site.id))
         }
       }
     }).toList
   }
 }
+

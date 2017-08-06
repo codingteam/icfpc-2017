@@ -5,11 +5,11 @@ import java.io.{DataInputStream, DataOutputStream}
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.Messages.Settings
 import org.codingteam.icfpc2017.GameMap.{Mine, Node, River, Site, SiteId}
+import org.codingteam.icfpc2017.futures.Future
 
 import scala.collection.mutable
 import scalax.collection.edge.LUnDiEdge
 import scalax.collection.mutable.Graph
-
 
 
 /**
@@ -29,7 +29,7 @@ object SerializationUtils {
     }
   }
 
-  def writeSettings(settings : Option[Settings], os: DataOutputStream): Unit = {
+  def writeSettings(settings: Option[Settings], os: DataOutputStream): Unit = {
     val present = settings.isDefined
     os.writeBoolean(present)
     if (present) {
@@ -44,6 +44,37 @@ object SerializationUtils {
       Some(Settings(futures))
     } else {
       None
+    }
+  }
+
+  def writeFutures(futures: Option[List[Future]], os: DataOutputStream): Unit = {
+    futures match {
+      case None => os.writeInt(-1)
+      case Some(list) =>
+        os.writeInt(list.size)
+        list.foreach({
+          future: Future => {
+            os.writeInt(future.sourceId.toInt)
+            os.writeInt(future.targetId.toInt)
+          }
+        })
+    }
+  }
+
+  def readFutures(is: DataInputStream): Option[List[Future]] = {
+    val size = is.readInt()
+    if (size == -1) {
+      None
+    } else {
+      val futures =
+        (1 to size).map({
+          i: Int => {
+            val source = BigInt(is.readInt())
+            val target = BigInt(is.readInt())
+            Future(source, target)
+          }
+        }).toList
+      Some(futures)
     }
   }
 

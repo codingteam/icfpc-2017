@@ -33,7 +33,7 @@ object HandlerLoop extends Logging {
           }
           log.debug(s"Generated futures: $futures.")
           val rs = SetupRs(punter, futures)
-          val state = new FullState(CommonState(setup.map, setup.punter, setup.punters, setup.settings), strategy)
+          val state = new FullState(CommonState(setup.map, setup.punter, setup.punters, setup.settings, futures), strategy)
           server.writeToServer(rs.toJson())
           state
         case _ =>
@@ -50,10 +50,13 @@ object HandlerLoop extends Logging {
 
             val m = strategy.nextMove()
             fullState.updateState(Seq(m))
+            val fullfilledFutures = fullState.commonState.getFutureStats
+            log.info(s"Our futures fullfilled: ${fullfilledFutures._1} of ${fullfilledFutures._2}")
             m
 
           case Some(stop: Stop) =>
             log.info("Our score: " + stop.getScore(fullState.commonState.me))
+            //log.info(s"Resulting graph: ${fullState.commonState.graph}.")
             return
 
           case _ => Pass(fullState.commonState.me)
@@ -83,15 +86,15 @@ object HandlerLoop extends Logging {
       Messages.parseServerMessageJson(request) match {
         case Some(setup: SetupRq) =>
           // -- realy fucking imperative code here --
-          val fullState = new FullState(CommonState(setup.map, setup.punter, setup.punters, setup.settings), strategy)
-          strategy.commonState = fullState.commonState
-
           val futureGenerator = RandomFutureGenerator(setup.map, futureGeneratorDistance)
           val futures = setup.settings match {
             case Some(Settings(true)) => Some(futureGenerator.generate())
             case _ => None
           }
+          val fullState = new FullState(CommonState(setup.map, setup.punter, setup.punters, setup.settings, futures), strategy)
           val rs = SetupRs(fullState.commonState.me, futures, fullState.toJson())
+          strategy.commonState = fullState.commonState
+
           server.writeToServer(rs.toJson())
 
         case Some(move: MoveRq) =>
