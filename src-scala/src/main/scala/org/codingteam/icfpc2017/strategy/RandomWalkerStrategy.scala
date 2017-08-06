@@ -57,7 +57,7 @@ class RandomWalkerStrategy extends Strategy {
 
   override def read(is: InputStream): Unit = {
     val data = new DataInputStream(is)
-    SerializationUtils.readGraph(graph, data)
+    _graph = SerializationUtils.readGraph(data)
   }
 
   override def write(os: OutputStream): Unit = {

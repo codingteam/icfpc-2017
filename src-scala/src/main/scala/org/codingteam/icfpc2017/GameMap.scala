@@ -14,11 +14,13 @@ object GameMap {
 
   type SiteId = BigInt
 
-  abstract class Node
+  abstract sealed class Node {
+    def id: SiteId
+  }
 
-  case class Site(id: SiteId) extends Node
+  case class Site(override val id: SiteId) extends Node
 
-  case class Mine(id: SiteId) extends Node
+  case class Mine(override val id: SiteId) extends Node
 
   object SiteImplicit extends LEdgeImplicits[Option[Punter]]
 
