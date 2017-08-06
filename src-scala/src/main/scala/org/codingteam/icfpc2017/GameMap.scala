@@ -22,7 +22,7 @@ object GameMap {
 
   case class Mine(override val id: SiteId) extends Node
 
-  object SiteImplicit extends LEdgeImplicits[Option[Punter]]
+  object SiteImplicit extends LEdgeImplicits[Punter]
 
   case class River(source: SiteId, target: SiteId) {
     def toEdge(map: Map): LUnDiEdge[Node] = {

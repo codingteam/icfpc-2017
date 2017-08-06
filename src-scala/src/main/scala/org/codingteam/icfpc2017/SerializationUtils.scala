@@ -16,12 +16,24 @@ import scalax.collection.mutable.Graph
   * Utilities for serialization.
   */
 object SerializationUtils {
+  def writeMagic(magic: String, os: DataOutputStream): Unit = {
+    os.write(magic.getBytes)
+  }
+
+  def checkMagic(magic: String, is: DataInputStream): Unit = {
+    val correctMagic = magic.getBytes.forall(_ == is.read().toByte)
+    if (!correctMagic) {
+      throw new IllegalArgumentException("Wrong magic value, expected " + magic)
+    }
+  }
+
   def writeMap(map: GameMap.Map, os: DataOutputStream): Unit = {
     // assert that SiteId is Int.
     os.writeInt(map.sites.size)
     map.sites foreach (s => os.writeInt(s.id.toInt))
     os.writeInt(map.mines.size)
     map.mines foreach (m => os.writeInt(m.toInt))
+    //writeMagic("RI", os)
     os.writeInt(map.rivers.size)
     map.rivers foreach { r =>
       os.writeInt(r.source.toInt)
@@ -85,12 +97,13 @@ object SerializationUtils {
       sites(i) = Site(is.readInt())
 
     val minesCount = is.readInt()
-    val mines = Array.ofDim[SiteId](sitesCount)
+    val mines = Array.ofDim[SiteId](minesCount)
     for (i <- mines.indices)
       mines(i) = is.readInt()
 
+    //checkMagic("RI", is)
     val riversCount = is.readInt()
-    val rivers = Array.ofDim[River](sitesCount)
+    val rivers = Array.ofDim[River](riversCount)
     for (i <- rivers.indices) {
       rivers(i) = River(is.readInt(), is.readInt())
     }
@@ -120,7 +133,15 @@ object SerializationUtils {
       assert(ns.size == 2)
       os.writeInt(ns(0).value.id.toInt)
       os.writeInt(ns(1).value.id.toInt)
-      val punterId = edge.label.asInstanceOf[Option[Punter]] map (_.id.toInt) getOrElse -1
+      val punterId =
+        if (edge.label == None) {
+          -1
+        } else {
+          if (! edge.label.isInstanceOf[Punter]) {
+            throw new Exception(s"Invalid edge label: ${edge.label}")
+          }
+          edge.label.asInstanceOf[Punter].id.toInt
+        }
       os.writeInt(punterId)
     }
   }
@@ -133,6 +154,7 @@ object SerializationUtils {
       val node = is.readByte() match {
         case 1 => Site(is.readInt())
         case 2 => Mine(is.readInt())
+        case x => throw new Exception(s"Unexpected site kind: $x")
       }
       sites += node.id -> node
       graph.add(node)
@@ -144,7 +166,7 @@ object SerializationUtils {
       val n2 = sites(is.readInt())
       val punter = is.readInt() match {
         case -1 => None
-        case id => Some(Punter(id))
+        case id => Punter(id)
       }
       val edge = LUnDiEdge(n1, n2)(punter)
       graph.add(edge)

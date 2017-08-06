@@ -10,7 +10,7 @@ import scalax.collection.edge.LBase.LEdgeImplicits
 
 case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
 
-  object PunterImplicit extends LEdgeImplicits[Option[Punter]]
+  object PunterImplicit extends LEdgeImplicits[Punter]
   import PunterImplicit._
 
   def getNodes: Iterable[Node] = graph.nodes
