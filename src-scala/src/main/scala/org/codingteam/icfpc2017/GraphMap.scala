@@ -192,14 +192,14 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) {
 
   def scoreMine(punter: Punter, subgraph: GraphMap, mine: Node): Int = {
     val g = graph
-    g.nodes.map({
+    g.nodes.toSeq.map({
       node: Graph[Node, LUnDiEdge]#NodeT => scoreMineSite(punter, subgraph, mine, node.value)
     }).sum
   }
 
   def score(punter : Punter) : Int = {
     val subgraph = getPunterSubgraph(punter)
-    getMineNodes.map({
+    getMineNodes.toSeq.map({
       node: Graph[Node, LUnDiEdge]#NodeT => scoreMine(punter, subgraph, node.value)
     }).sum
   }
