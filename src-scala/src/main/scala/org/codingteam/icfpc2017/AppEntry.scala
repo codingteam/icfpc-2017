@@ -91,6 +91,7 @@ object AppEntry extends App with Logging {
         (1.0, new ComponentConnectorStrategy()),
         (1.0, new DumbObstructorStrategy()),
         (0.5, new RandomConnectorStrategy())))
+      case "antihero" => new AntiheroStrategy()
       case _ => throw new Exception("unsupported name: " + name)
     }
   }
