@@ -3,8 +3,8 @@ package org.codingteam.icfpc2017
 import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Common.Punter
-import org.codingteam.icfpc2017.GameMap.Site
-import org.codingteam.icfpc2017.Messages.{Claim, Move, Settings}
+import org.codingteam.icfpc2017.GameMap.{Site, SiteId}
+import org.codingteam.icfpc2017.Messages.{Claim, Splurge, Move, Settings}
 import org.codingteam.icfpc2017.futures.Future
 
 /**
@@ -29,11 +29,24 @@ class CommonState {
   }
 
   def updateState(moves: Seq[Move]): Unit = {
-    for (Claim(punter, source, target) <- moves) {
-      val sourceNode = map.siteToNode(source)
-      val targetNode = map.siteToNode(target)
-      graph.mark(sourceNode, targetNode, punter)
-    }
+    moves.foreach({
+      case Claim(punter, source, target) =>
+        val sourceNode = map.siteToNode(source)
+        val targetNode = map.siteToNode(target)
+        graph.mark(sourceNode, targetNode, punter)
+
+      case Splurge(punter, sites) =>
+        //println("!!!Splurge!")
+        val pairs = sites.zip(sites.tail)
+        pairs.foreach({
+          case (source, target) =>
+            val sourceNode = map.siteToNode(Site(source))
+            val targetNode = map.siteToNode(Site(target))
+            graph.mark(sourceNode, targetNode, punter)
+            //println(s"Splurge $sourceNode $targetNode")
+        })
+      case _ =>
+    })
   }
 
   def getFullfilledFutures(): Iterable[Future] = {
