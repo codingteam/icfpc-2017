@@ -110,7 +110,7 @@ class MineOccupationStrategy extends Strategy with Logging {
 
     var futureMineNodes: Iterable[g.NodeT] =
       commonState.futures match {
-        case None => allMineNodes
+        case None => List()
         case Some(list) =>
           list.map({
             future: Future => g get Mine(future.sourceId)
