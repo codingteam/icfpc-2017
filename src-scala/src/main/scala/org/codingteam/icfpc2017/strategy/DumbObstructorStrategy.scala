@@ -24,7 +24,7 @@ class DumbObstructorStrategy extends Strategy with Logging {
       return goodMoveList.head
 
     val allCandidates = graph.getForeignNeighbours(me, commonState.punterCount)
-    log.debug(s"All: $allCandidates")
+    //log.debug(s"All: $allCandidates")
     val bestPunter = getBestPunter()._1
     val candidates: Iterable[Graph[Node, LUnDiEdge]#EdgeT] = allCandidates.get(Punter(bestPunter)).getOrElse(List())
 
@@ -83,7 +83,7 @@ class DumbObstructorStrategy extends Strategy with Logging {
     //    for((punter,ps)<-parts){    }
 
     // TODO: move probability.
-    0.3
+    rng.nextDouble
   }
 
   def computePuntersParts(): Map[Punter, Seq[Part]] = {
