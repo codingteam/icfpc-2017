@@ -1,15 +1,15 @@
 package org.codingteam.icfpc2017.strategy
 
-import org.codingteam.icfpc2017.Messages.{Move, Pass}
 import org.codingteam.icfpc2017.Common.Punter
+import org.codingteam.icfpc2017.GameMap.{Node, Site}
+import org.codingteam.icfpc2017.Messages.{Move, Pass}
+import org.codingteam.icfpc2017.strategy.DumbObstructorStrategy.Part
 import org.codingteam.icfpc2017.{Canceller, GameMap, Logging, Messages}
-import org.codingteam.icfpc2017.GameMap.Node
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable
 import scala.util.Random
 import scalax.collection.edge.LUnDiEdge
 import scalax.collection.mutable.Graph
-import scalax.collection.edge.LBase.LEdgeImplicits
 
 /**
   * Created by portnov on 8/5/17.
@@ -17,8 +17,12 @@ import scalax.collection.edge.LBase.LEdgeImplicits
 class DumbObstructorStrategy extends Strategy with Logging {
 
   private var rng = Random
+  private var goodMoveList = IndexedSeq[Move]()
 
   override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
+    if (goodMoveList.nonEmpty)
+      return goodMoveList.head
+
     val allCandidates = graph.getForeignNeighbours(me, commonState.punterCount)
     log.debug(s"All: $allCandidates")
     val bestPunter = getBestPunter()._1
@@ -52,8 +56,8 @@ class DumbObstructorStrategy extends Strategy with Logging {
 
   override def updateState(moves: Seq[Move]): Unit = {}
 
-  def getBestPunter() : (Int, Int) = {
-    var bestPunterId : Int = 0
+  def getBestPunter(): (Int, Int) = {
+    var bestPunterId: Int = 0
     var bestScore = 0
 
     (0 to commonState.punterCount).foreach({
@@ -73,8 +77,42 @@ class DumbObstructorStrategy extends Strategy with Logging {
   }
 
   override def goodMoveProbability(): Double = {
+    goodMoveList = IndexedSeq()
+
+    //    val parts = computePuntersParts()
+    //    for((punter,ps)<-parts){    }
+
     // TODO: move probability.
     0.3
   }
+
+  def computePuntersParts(): Map[Punter, Seq[Part]] = {
+    val g = graph.graph
+    val map = mutable.HashMap[Punter, mutable.Buffer[mutable.Set[Site]]]()
+    for (e: g.EdgeT <- g.edges; punter <- e.label.asInstanceOf[Option[Punter]]) {
+      val buffer = map get punter match {
+        case Some(b) => b
+        case None =>
+          val b = mutable.Buffer[mutable.Set[Site]]()
+          map(punter) = b
+          b
+      }
+      // TODO: implement it.
+      for (n <- e.nodes) {
+
+        n.value.id
+      }
+    }
+    val r = map.groupBy(_._1).map {
+      case (p, v) => p -> v.map(_._2).flatten.map(pp => Part(p, pp.toSet)).toSeq
+    }
+    r
+  }
+}
+
+object DumbObstructorStrategy {
+
+  case class Part(punter: Punter, nodes: Set[Site])
+
 
 }
