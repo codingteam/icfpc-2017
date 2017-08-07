@@ -2,6 +2,7 @@
 
 use warnings;
 use strict;
+use List::Util qw( sum0 );
 
 my %strategies;
 my $score = 0;
@@ -26,3 +27,13 @@ foreach my $strategy (sort keys %strategies) {
 }
 
 print "Our score: $score. Futures fullfilled: $fullfilledFutures of $totalFutures.\n";
+
+my $W = sum0 (values %strategies);
+my $cw = $strategies{"ComponentConnectorStrategy"} / $W;
+my $dw = $strategies{"DumbObstructorStrategy"} / $W;
+my $fw = $strategies{"FutureStrategy"} / $W;
+my $gw = $strategies{"GreedyStrategy"} / $W;
+my $mw = $strategies{"MineOccupationStrategy"} / $W;
+my $rw = $strategies{"RandomConnectorStrategy"} / $W;
+
+print "Suggested coefficients: $gw $fw $mw $cw $dw $rw\n";
