@@ -139,6 +139,10 @@ object HandlerLoop extends Logging {
 
           val me = fullState.commonState.me
           log.info(s"Our score: ${stop.getScore(me)}")
+
+        case Some(timeout: Timeout) =>
+          log.error(s"We have a timeout: $timeout.")
+
         case _ =>
       }
 

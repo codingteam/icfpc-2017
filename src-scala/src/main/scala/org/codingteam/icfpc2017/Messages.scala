@@ -207,6 +207,16 @@ object Messages {
     }
   }
 
+  case class Timeout(timeout: Float) extends Message
+
+  object IsTimeout {
+    def unapply(json: JValue): Option[Timeout] = {
+      hasKey(json, "timeout") toOption {
+        json.extract[Timeout]
+      }
+    }
+  }
+
   def hasKey(json: JValue, key: String): Boolean = {
     val v = json \ key
     // TODO: JNull check ?
@@ -232,6 +242,7 @@ object Messages {
       case SetupRq(setup) => Some(setup)
       case MoveRq(move) => Some(move)
       case Stop(stop) => Some(stop)
+      case IsTimeout(timeout) => Some(timeout)
       case _ => None
     }
   }
