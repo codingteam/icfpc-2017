@@ -4,7 +4,7 @@ import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.GameMap._
 import org.codingteam.icfpc2017.futures.Future
 
-import scala.collection.mutable.{Map => MMap, Set => MSet}
+import scala.collection.mutable.{ListBuffer, Map => MMap, Set => MSet}
 import scalax.collection.edge.LUnDiEdge
 import scalax.collection.mutable.Graph
 import scalax.collection.edge.LBase.LEdgeImplicits
@@ -166,9 +166,19 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
     getNeighbours(punterEdges)
   }
 
-  def getForeignNeighbours(punter: Punter): Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+  def getForeignNeighbours(punter: Punter, nPunters: Int): MMap[Punter, Iterable[Graph[Node, LUnDiEdge]#EdgeT]] = {
     val foreignEdges = getForeignEdges(punter).toSet
-    getNeighbours(foreignEdges)
+
+    val g = graph
+    var result = MMap.empty[Punter, Iterable[Graph[Node, LUnDiEdge]#EdgeT]]
+    (0 to nPunters).foreach({
+      punterId =>
+        if (punterId != punter.id) {
+          val foreigner = Punter(punterId)
+          result.put(foreigner, getPunterNeighbours(foreigner))
+        }
+    })
+    result
   }
 
   def getFreeNearMines(): Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
