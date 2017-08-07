@@ -35,7 +35,7 @@ class DelegatingStrategy(val strategies: Seq[Strategy],
     val selected = good(rnd nextInt good.size)._1
 
     @inline def getMove(s: Strategy): Move = {
-      log.debug(s"Mixed: Selected strategy: $s")
+      log.debug(s"Delegating: Selected strategy: $s")
       if (useBackgroundThreads) {
         val fut = Future(s.nextMove(deadLineMs, cancel))(ExecutionContexts.backgroundContext)
         try {
