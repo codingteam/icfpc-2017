@@ -31,6 +31,7 @@ runServer gameMap port numberOfPlayers = withSocketsDo $ do
               Nothing (Just port)
   let serveraddr = head addrinfos
   sock <- socket (addrFamily serveraddr) Stream defaultProtocol
+  setSocketOption sock ReuseAddr 1
   bind sock (addrAddress serveraddr)
   listen sock numberOfPlayers
 
