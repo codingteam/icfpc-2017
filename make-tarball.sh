@@ -2,8 +2,8 @@
 
 set -e
 
-TARBALL_NAME=icfpc-XX_add_our_code_here_XX.tar.gz
-
+TARBALL_NAME=icfp-XXXXXXXX_add_our_code_here_XXXXXXXXX.tar.gz
+                        
 BASE_DIR=`pwd`
 
 build(){

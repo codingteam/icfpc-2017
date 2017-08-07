@@ -76,7 +76,7 @@ object AppEntry extends App with Logging {
 
   def runOfflineLoop(log: Option[String], name: String): Unit = {
     val strategy = selectStrategy(name)
-    HandlerLoop.runOfflineMove(StreamParser.connectToStdInOut(log), strategy, name)
+    HandlerLoop.runOfflineMove(StreamParser.connectToStdInOut(log), strategy, "codingpunter")
   }
 
   def selectStrategy(name: String): Strategy = {
