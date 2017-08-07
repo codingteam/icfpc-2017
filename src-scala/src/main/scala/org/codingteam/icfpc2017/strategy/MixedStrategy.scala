@@ -45,7 +45,7 @@ class MixedStrategy(val strategies: Seq[(Double, Strategy)],
     val ps = strategies.map(s => (s._2, math.pow(s._2.goodMoveProbability() * s._1, alpha)))
     val W = ps.map(_._2).sum
 
-    @inline def getMove(s: Strategy): Move = {
+    def getMove(s: Strategy): Move = {
       log.debug(s"Mixed: Selected strategy: $s")
       if (useBackgroundThreads) {
         val fut = Future(s.nextMove(deadLineMs, cancel))(ExecutionContexts.backgroundContext)
