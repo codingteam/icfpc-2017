@@ -21,6 +21,7 @@ class AntiheroStrategy extends GreedyStrategy with Logging {
       case m: Messages.Claim => m.copy(punter = commonState.me)
       case m: Messages.Pass => m.copy(punter = commonState.me)
       case m: Messages.Splurge => m.copy(punter = commonState.me)
+      case m: Messages.AnOption => m.copy(punter = commonState.me)
     }
   }
 

@@ -21,6 +21,8 @@ scalacOptions += "-opt:l:classpath"
 
 scalacOptions += "-deprecation"
 
+scalacOptions += "-opt-warnings"
+
 lazy val deploy: TaskKey[File] = TaskKey("deploy", "Make assembly & copy it to ../deploy directory")
 
 deploy := {
