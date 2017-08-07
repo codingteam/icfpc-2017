@@ -62,14 +62,16 @@ object AppEntry extends App with Logging {
         Logging.outputStream = Some(new PrintStream(new File(s"logs/game-${Instant.now().toEpochMilli}.lson")))
         runOfflineLoop(Some(s"logs/game-${Instant.now().toEpochMilli}.lson"), name)
 
-      case Array("--mixed-coefficients", Parsing.I(port), Parsing.D(gw), Parsing.D(fw), Parsing.D(mw), Parsing.D(cw), Parsing.D(dw), Parsing.D(rw)) =>
+      case Array("--mixed-coefficients", Parsing.I(port), Parsing.D(gw), Parsing.D(fw), Parsing.D(mw), Parsing.D(cw), Parsing.D(dw), Parsing.D(rw), Parsing.D(a)) =>
         val strategy = new MixedStrategy(Seq(
           (gw, new GreedyStrategy()),
           (fw, new FutureStrategy()),
           (mw, new MineOccupationStrategy()),
           (cw, new ComponentConnectorStrategy()),
           (dw, new DumbObstructorStrategy()),
-          (rw, new RandomConnectorStrategy())))
+          (rw, new RandomConnectorStrategy())),
+          useBackgroundThreads = true,
+          alpha = a)
         HandlerLoop.runLoop(StreamParser.connect("127.0.0.1", port, None), strategy, "whatever")
 
       case _ =>
