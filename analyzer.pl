@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-%strategies = {};
+%strategies;
 $score = 0;
 $fullfilledFutures = 0;
 $totalFutures = 0;
