@@ -48,7 +48,7 @@ class DumbObstructorStrategy extends Strategy with Logging {
 
   override def goodMoveProbability(): Double = {
     // TODO: move probability.
-    1
+    0.3
   }
 
 }

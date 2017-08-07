@@ -206,15 +206,12 @@ object Messages {
     }
   }
 
-  case class Timeout(t: Double) extends Message
+  case class Timeout(timeout: Double) extends Message
 
-  object Timeout {
+  object IsTimeout {
     def unapply(json: JValue): Option[Timeout] = {
-      (json \ "timeout").toOption collect {
-        case JDecimal(d) => Timeout(d.toDouble)
-        case JInt(d) => Timeout(d.toDouble)
-        case JDouble(d) => Timeout(d.toDouble)
-        case JLong(d) => Timeout(d.toDouble)
+      hasKey(json, "timeout") toOption {
+        json.extract[Timeout]
       }
     }
   }
@@ -244,7 +241,7 @@ object Messages {
       case SetupRq(setup) => Some(setup)
       case MoveRq(move) => Some(move)
       case Stop(stop) => Some(stop)
-      case Timeout(ti) => Some(ti)
+      case IsTimeout(timeout) => Some(timeout)
       case _ => None
     }
   }
