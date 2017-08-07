@@ -18,7 +18,7 @@ class ComponentConnectorStrategy extends Strategy with Logging {
 
   private var rng = Random
 
-  private var noPaths : Boolean = false
+  private var noPaths: Boolean = false
 
   def getComponents(): Seq[(Iterable[Node], Int)] = {
     val g = graph.graph
@@ -110,9 +110,9 @@ class ComponentConnectorStrategy extends Strategy with Logging {
       log.debug(c)
     }*/
 
-    var bestPath : Option[Graph[Node, LUnDiEdge]#Path] = None
+    var bestPath: Option[Graph[Node, LUnDiEdge]#Path] = None
     var bestRho = 1000500
-    var bestComponentIdxs: (Int,Int) = (0,0)
+    var bestComponentIdxs: (Int, Int) = (0, 0)
 
     if (componentsNumber > 1) {
       for {component1 <- components
@@ -184,14 +184,14 @@ class ComponentConnectorStrategy extends Strategy with Logging {
         edge: g.EdgeT => (edge.label != None) && (edge.label == me)
       })
       val componentsNumber = getComponents().size
-      log.debug(s"Found components: ${componentsNumber}")
-      if (componentsNumber > 1) {
-        /*for (c <- components) {
-          log.debug(c)
-        }*/
-        componentsNumber
-      } else {
-        0.0
+      log.debug(s"Found components: $componentsNumber")
+      /*for (c <- components) {
+        log.debug(c)
+      }*/
+      componentsNumber match {
+        case 0 => 0.0
+        case 1 => 0.8
+        case n if n > 1 => 1.0
       }
     }
   }

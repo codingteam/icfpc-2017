@@ -3,8 +3,8 @@ package org.codingteam.icfpc2017
 import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Common.Punter
+import org.codingteam.icfpc2017.GameMap.Site
 import org.codingteam.icfpc2017.Messages.{Claim, Move, Settings}
-import org.codingteam.icfpc2017.GameMap.{SiteId, Site}
 import org.codingteam.icfpc2017.futures.Future
 
 /**
@@ -53,7 +53,7 @@ class CommonState {
       case None => (0, 0)
       case Some(list) => {
         val fullfilled = getFullfilledFutures().size
-        val total = futures.get.size
+        val total = list.size
         (fullfilled, total)
       }
     }

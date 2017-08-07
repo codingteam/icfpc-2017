@@ -162,13 +162,13 @@ class MineOccupationStrategy extends Strategy with Logging {
 
     if (futureMines > 0) {
       log.debug(s"There are mines mentioned in our futures, but untouched by us: $futureMines.")
-      10.0
+      1
     } else if (freeMines > 0) {
       log.debug(s"There are mines untouched by us: $freeMines.")
-      5.0
+      0.5
     } else if (underoccupiedMines > 0) {
       log.debug(s"There are mines that are not fully occupied by us yet: ${underoccupiedMines}.")
-      0.5
+      0.3
     } else {
       log.debug("All mines are already occupied.")
       0

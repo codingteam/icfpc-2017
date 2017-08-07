@@ -129,12 +129,8 @@ class FutureStrategy extends Strategy with Logging {
 
 
   override def goodMoveProbability(): Double = {
-    val (fullfilled, total) = commonState.getFutureStats
-    if (fullfilled < total) {
-      (total - fullfilled) / 2.0
-    } else {
-      0
-    }
+    val (fullfilled, total) = commonState.getFutureStats()
+    if (fullfilled < total) 1.0 else 0.0
   }
 
   override def read(is: InputStream): Unit = {

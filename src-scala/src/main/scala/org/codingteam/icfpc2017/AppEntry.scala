@@ -56,7 +56,7 @@ object AppEntry extends App with Logging {
 
       case Array("--offline") =>
         Logging.outputStream = None
-        runOfflineLoop(None, "mixed")
+        runOfflineLoop(None, "delegating")
 
       case Array("--offline-with-log", name) =>
         Logging.outputStream = Some(new PrintStream(new File(s"logs/game-${Instant.now().toEpochMilli}.lson")))
@@ -64,7 +64,7 @@ object AppEntry extends App with Logging {
 
       case _ =>
         Logging.outputStream = None
-        runOfflineLoop(None, "mixed")
+        runOfflineLoop(None, "delegating")
     }
 
   }
@@ -81,23 +81,30 @@ object AppEntry extends App with Logging {
 
   def selectStrategy(name: String): Strategy = {
     name match {
-      case "codingpunter-dumb-obstructor" => new DelegatingStrategy(Seq(new DumbObstructorStrategy()))
-      case "random-codingpunter" => new DelegatingStrategy(Seq(new RandomConnectorStrategy()))
-      case "codingpunter" => new DelegatingStrategy(Seq(new GreedyStrategy()))
-      case "connector" => new DelegatingStrategy(Seq(new ComponentConnectorStrategy()))
+      case "codingpunter-dumb-obstructor" => new DelegatingStrategy(Seq(new DumbObstructorStrategy()), true)
+      case "random-codingpunter" => new DelegatingStrategy(Seq(new RandomConnectorStrategy()), true)
+      case "codingpunter" => new DelegatingStrategy(Seq(new GreedyStrategy()), true)
+      case "connector" => new DelegatingStrategy(Seq(new ComponentConnectorStrategy()), true)
       case "mixed" => new MixedStrategy(Seq(
         (2.0, new GreedyStrategy()),
         (2.0, new FutureStrategy()),
         (1.0, new MineOccupationStrategy()),
         (1.0, new ComponentConnectorStrategy()),
         (1.0, new DumbObstructorStrategy()),
-        (0.5, new RandomConnectorStrategy())))
+        (0.5, new RandomConnectorStrategy())),
+        useBackgroundThreads = true)
+      case "delegating" => new DelegatingStrategy(Seq(
+        new GreedyStrategy(),
+        new FutureStrategy(),
+        new MineOccupationStrategy(),
+        new ComponentConnectorStrategy(),
+        new DumbObstructorStrategy(),
+        new RandomConnectorStrategy()),
+        useBackgroundThreads = true)
       case "antihero" => new AntiheroStrategy()
       case _ => throw new Exception("unsupported name: " + name)
     }
   }
-
-  // lazy val strategy = new DelegatingStrategy(Seq(new GreedyStrategy()))
 
   run()
 }

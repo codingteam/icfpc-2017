@@ -47,6 +47,7 @@ class DumbObstructorStrategy extends Strategy with Logging {
   override def updateState(moves: Seq[Move]): Unit = {}
 
   override def goodMoveProbability(): Double = {
+    // TODO: move probability.
     1
   }
 

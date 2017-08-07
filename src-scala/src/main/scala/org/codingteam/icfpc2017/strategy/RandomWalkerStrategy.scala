@@ -52,7 +52,8 @@ class RandomWalkerStrategy extends Strategy {
   }
 
   override def goodMoveProbability(): Double = {
-    1 / graph.getFreeEdges().size
+    val free = graph.getFreeEdges().size
+    if (free == 0) 0.0 else 0.2
   }
 
   override def read(is: InputStream): Unit = {

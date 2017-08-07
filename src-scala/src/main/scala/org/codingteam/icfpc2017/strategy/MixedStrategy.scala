@@ -21,7 +21,8 @@ import scala.util.Random
   * p_i  - good move probability, которую вернула стратегия i
   * S    - множество всех стратегий
   */
-class MixedStrategy(val strategies: Seq[(Double, Strategy)]) extends Strategy with Logging {
+class MixedStrategy(val strategies: Seq[(Double, Strategy)],
+                    val useBackgroundThreads: Boolean) extends Strategy with Logging {
   require(strategies.nonEmpty)
 
   private val W = strategies.map(_._1).sum
@@ -45,20 +46,22 @@ class MixedStrategy(val strategies: Seq[(Double, Strategy)]) extends Strategy wi
 
     @inline def getMove(s: Strategy): Move = {
       log.debug(s"Mixed: Selected strategy: $s")
-      val fut = Future(s.nextMove(deadLineMs, cancel))(ExecutionContexts.backgroundContext)
-      try {
-        Await.result(fut, Duration(deadLineMs - System.currentTimeMillis(), TimeUnit.MILLISECONDS))
-      } catch {
-        case _: TimeoutException =>
-          log.debug("Deadline timeout, return Pass()")
-          Messages.Pass(me)
-        case _: InterruptedException =>
-          log.debug("Wait on nextMove() interrupted, return Pass()")
-          Messages.Pass(me)
-        case _: CancellationException =>
-          log.debug("nextMove() cancelled, return Pass()")
-          Messages.Pass(me)
-      }
+      if (useBackgroundThreads) {
+        val fut = Future(s.nextMove(deadLineMs, cancel))(ExecutionContexts.backgroundContext)
+        try {
+          Await.result(fut, Duration(deadLineMs - System.currentTimeMillis(), TimeUnit.MILLISECONDS))
+        } catch {
+          case _: TimeoutException =>
+            log.debug("Deadline timeout, return Pass()")
+            Messages.Pass(me)
+          case _: InterruptedException =>
+            log.debug("Wait on nextMove() interrupted, return Pass()")
+            Messages.Pass(me)
+          case _: CancellationException =>
+            log.debug("nextMove() cancelled, return Pass()")
+            Messages.Pass(me)
+        }
+      } else s.nextMove(deadLineMs, cancel)
     }
 
     var probability = rnd.nextDouble()

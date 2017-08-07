@@ -80,7 +80,7 @@ class GreedyStrategy extends Strategy with Logging {
 
   override def goodMoveProbability(): Double = {
     // TODO: repalce by a real probability
-    1
+    0.9
   }
 
   override def read(is: InputStream): Unit = {

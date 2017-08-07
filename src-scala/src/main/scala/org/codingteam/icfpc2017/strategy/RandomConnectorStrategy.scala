@@ -72,7 +72,7 @@ class RandomConnectorStrategy extends Strategy with Logging {
 
 
   override def goodMoveProbability(): Double = {
-    1
+    0.5
   }
 
   override def read(is: InputStream): Unit = {

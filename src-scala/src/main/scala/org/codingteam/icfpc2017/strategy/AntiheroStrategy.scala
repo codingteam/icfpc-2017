@@ -22,7 +22,7 @@ class AntiheroStrategy extends GreedyStrategy with Logging {
     }
   }
 
-  override def goodMoveProbability(): Double = super.goodMoveProbability() * 0.1
+  override def goodMoveProbability(): Double = super.goodMoveProbability() * 0.7
 
   override def updateState(moves: Seq[Messages.Move]): Unit = super.updateState(moves)
 }
