@@ -20,6 +20,7 @@ import Types
 data GameState =
   GameState {
     gsRivers :: M.Map (SiteId, SiteId) (Maybe PunterId)
+  , gsFutures :: M.Map PunterId [Future]
   }
   deriving (Show)
 
@@ -40,16 +41,17 @@ runServer gameMap port numberOfPlayers = withSocketsDo $ do
     return handle
 
   forM_ handles exchangeGreetings
-  mapM_
+  futuresList <- mapM
     (uncurry4 doSetup)
     (zip4
       [0..]
       (repeat numberOfPlayers)
       (repeat gameMap)
       handles)
+  let futures = M.fromList futuresList
 
   let totalTurnsCount = length $ gmRivers gameMap
-  let initialState = mkGameState gameMap
+  let initialState = mkGameState gameMap futures
   (state, moves) <-
     playTurn
       numberOfPlayers
@@ -72,7 +74,19 @@ runServer gameMap port numberOfPlayers = withSocketsDo $ do
 
 calculatePunterScore :: GameMap -> GameState -> PunterId -> Int
 calculatePunterScore gameMap state punterId =
-  sum $ map (calculatePunterScoreAtMine gameMap state punterId) (gmMines gameMap)
+  sum $
+    (calculatePunterScoreForFutures gameMap state punterId)
+    : map (calculatePunterScoreAtMine gameMap state punterId) (gmMines gameMap)
+
+calculatePunterScoreForFutures :: GameMap -> GameState -> PunterId -> Int
+calculatePunterScoreForFutures gameMap gs@(GameState state futures) punterId =
+  case punterId `M.lookup` futures of
+    Nothing -> 0
+    Just futures' ->
+      sum $ (flip map) futures' $ \(Future source target) ->
+        if (hasPath gs punterId source target)
+          then (distance gs source target) ^ 3
+          else 0
 
 calculatePunterScoreAtMine :: GameMap -> GameState -> PunterId -> SiteId -> Int
 calculatePunterScoreAtMine gameMap state punterId mineId =
@@ -87,7 +101,7 @@ calculateScoreForConnection state punterId mineId siteId =
     else 0
 
 hasPath :: GameState -> PunterId -> SiteId -> SiteId -> Bool
-hasPath (GameState state) punterId start finish =
+hasPath (GameState state _) punterId start finish =
   isJust $ dijkstra getNeighbours costFn (== finish) start
   where
   getNeighbours :: SiteId -> [SiteId]
@@ -101,7 +115,7 @@ hasPath (GameState state) punterId start finish =
   costFn _ _ = 1
 
 distance :: GameState -> SiteId -> SiteId -> Int
-distance (GameState state) start finish =
+distance (GameState state _) start finish =
   case dijkstra getNeighbours costFn (== finish) start of
     Nothing -> 0
     Just (cost, _) -> cost
@@ -115,22 +129,23 @@ distance (GameState state) start finish =
 
   costFn _ _ = 1
 
-mkGameState :: GameMap -> GameState
-mkGameState gameMap =
-  GameState $ foldl'
-    (\state river ->
-      M.insert
-        (source river, target river)
-        Nothing
-        state)
-    M.empty
-    (gmRivers gameMap)
+mkGameState :: GameMap -> M.Map PunterId [Future] -> GameState
+mkGameState gameMap futures =
+  let state = foldl'
+        (\state river ->
+          M.insert
+            (source river, target river)
+            Nothing
+            state)
+        M.empty
+        (gmRivers gameMap)
+  in GameState state futures
 
 applyMove :: GameState -> Move -> GameState
 applyMove state (Pass _) = state
-applyMove (GameState s) (Claim p source target) =
+applyMove (GameState s futures) (Claim p source target) =
   let s' = M.insert (source, target) (Just p) s
-  in GameState s'
+  in GameState s' futures
 
 uncurry4 :: (a -> b -> c -> d -> e) -> ((a, b, c, d) -> e)
 uncurry4 f (m, n, l, p) = f m n l p
@@ -163,12 +178,13 @@ exchangeGreetings handle = do
   let response = SHelloRs $ HelloRs $ hrqName hello
   sendMessage handle response
 
-doSetup :: Int -> Int -> GameMap -> Handle -> IO ()
+doSetup :: Int -> Int -> GameMap -> Handle -> IO (PunterId, [Future])
 doSetup punterId puntersCount gameMap handle = do
-  -- TODO: notify the players that we don't support futures and splurges
-  let message = SSetupRq $ SetupRq punterId puntersCount gameMap
+  let settings = defaultSettings { sFutures = True }
+  let message = SSetupRq $ SetupRq punterId puntersCount gameMap settings
   sendMessage handle message
-  void $ getMessage handle
+  CSetupRs (SetupRs _ futures) <- getMessage handle
+  return (punterId, futures)
 
 playTurn :: Int -> [Handle] -> Int -> [Move] -> GameState -> IO (GameState, [Move])
 playTurn _ _ 0 previousMoves state = return (state, previousMoves)
