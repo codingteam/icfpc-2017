@@ -114,7 +114,26 @@ instance ToJSON GameMap where
     , "mines" .= mines
     ]
 
-data SetupRq = SetupRq {srqPunter :: PunterId, srqPunters :: Int, srqMap :: GameMap}
+data Settings = Settings {
+    sFutures :: Bool
+  }
+  deriving (Eq, Show)
+
+defaultSettings = Settings False
+
+instance ToJSON Settings where
+  toJSON (Settings futures) =
+    object [
+      "futures" .= futures
+    ]
+
+instance FromJSON Settings where
+  parseJSON (Object v) = do
+    futures <- v .: "futures"
+    return $ Settings futures
+
+
+data SetupRq = SetupRq {srqPunter :: PunterId, srqPunters :: Int, srqMap :: GameMap, srqSettings :: Settings}
   deriving (Eq, Show)
 
 instance FromJSON SetupRq where
@@ -122,26 +141,49 @@ instance FromJSON SetupRq where
     punter <- v .: "punter"
     punters <- v .: "punters"
     map <- v .: "map"
-    return $ SetupRq punter punters map
+    settings <- v .: "settings"
+    return $ SetupRq punter punters map settings
 
 instance ToJSON SetupRq where
-  toJSON (SetupRq id punters map) =
+  toJSON (SetupRq id punters map settings) =
     object [
       "punter" .= id
     , "punters" .= punters
     , "map" .= map
+    , "settings" .= settings
     ]
 
-data SetupRs = SetupRs {srsPunter :: PunterId}
+data Future = Future { fSource :: SiteId, fTarget :: SiteId}
+  deriving (Eq, Show)
+
+instance ToJSON Future where
+  toJSON (Future source target) =
+    object [
+        "source" .= source
+      , "target" .= target
+      ]
+
+instance FromJSON Future where
+  parseJSON (Object v) = do
+    source <- v .: "source"
+    target <- v .: "target"
+    return $ Future source target
+
+data SetupRs = SetupRs {srsPunter :: PunterId, srsFutures :: [Future]}
   deriving (Eq, Show)
 
 instance ToJSON SetupRs where
-  toJSON (SetupRs punter) = object ["ready" .= punter]
+  toJSON (SetupRs punter futures) =
+    object [
+      "ready" .= punter
+    , "futures" .= futures
+    ]
 
 instance FromJSON SetupRs where
   parseJSON (Object v) = do
     punterId <- v .: "ready"
-    return $ SetupRs punterId
+    futures <- v .:? "futures" .!= []
+    return $ SetupRs punterId futures
 
 data Move =
   Claim {claimPunter :: PunterId, claimSource :: SiteId, claimTarget :: SiteId}

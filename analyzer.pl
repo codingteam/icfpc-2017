@@ -4,7 +4,14 @@ use warnings;
 use strict;
 use List::Util qw( sum0 );
 
-my %strategies;
+my %strategies = (
+  "ComponentConnectorStrategy" => 0,
+  "DumbObstructorStrategy" => 0,
+  "FutureStrategy" => 0,
+  "GreedyStrategy" => 0,
+  "MineOccupationStrategy" => 0,
+  "RandomConnectorStrategy" => 0);
+
 my $score = 0;
 my $fullfilledFutures = 0;
 my $totalFutures = 0;
@@ -41,4 +48,10 @@ my $gw = $strategies{"GreedyStrategy"} / $W;
 my $mw = $strategies{"MineOccupationStrategy"} / $W;
 my $rw = $strategies{"RandomConnectorStrategy"} / $W;
 
-print "Suggested coefficients: $gw $fw $mw $cw $dw $rw\n";
+printf "Suggested coefficients: %.3f %.3f %.3f %.3f %.3f %.3f\n", $gw, $fw, $mw, $cw, $dw, $rw;
+print "                        |     |     |     |     |     ` random connector\n";
+print "                        |     |     |     |      ` dumb obstructor\n";
+print "                        |     |     |      ` component connector\n";
+print "                        |     |      ` mine occupation\n";
+print "                        |      ` future\n";
+print "                         ` greedy\n";
