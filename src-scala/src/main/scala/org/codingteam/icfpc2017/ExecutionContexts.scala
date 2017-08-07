@@ -10,13 +10,16 @@ object ExecutionContexts {
       Runtime.getRuntime.availableProcessors(),
       Runtime.getRuntime.availableProcessors() * 2,
       30, TimeUnit.SECONDS,
-      new LinkedBlockingDeque()))
+      new LinkedBlockingDeque(),
+      daemonFactory,
+      rejectedExecutionHandler))
 
   lazy val daemonFactory: ThreadFactory = runnable => {
     val t = new Thread(runnable)
     t.setDaemon(true)
     t
   }
+  lazy val rejectedExecutionHandler: RejectedExecutionHandler = (runnable, pool) => {}
 
   def runInBackground[T](f: => T): Future[T] = Future(wrapFatal(f))(backgroundContext)
 
