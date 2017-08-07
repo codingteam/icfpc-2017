@@ -187,8 +187,8 @@ playTurn puntersCount handles n previousMoves state = do
   playTurn puntersCount handles (n-1) previousMoves' state'
 
 sendStop :: [Move] -> PunterId -> [Handle] -> [Score] -> IO ()
-sendStop _            _        []          []         = return ()
-sendStop moves@(m:ms) punterId (h:handles) (s:scores) = do
+sendStop _            _        []          _          = return ()
+sendStop moves@(m:ms) punterId (h:handles) scores = do
   let message = SStop $ StopRq moves scores
   sendMessage h message
   sendStop ((Pass(punterId)):ms) (punterId+1) handles scores
