@@ -1,7 +1,12 @@
 *~
+*.hi
+*.o
+*.swp
+src-haskell/.cabal-sandbox/
+src-haskell/cabal.sandbox.config
+src-haskell/Main
 .idea/
 src-scala/src/main/main.iml
 /deploy/codingteam-punter.jar
 /deploy/src/
 /*.tar.gz
-

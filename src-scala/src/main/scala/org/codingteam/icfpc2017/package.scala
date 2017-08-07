@@ -68,6 +68,16 @@ package object icfpc2017 {
       }
     }
 
+    object D {
+      def unapply(arg: String): Option[Double] = {
+        try {
+          Some(arg.toDouble)
+        } catch {
+          case _: NumberFormatException => None
+        }
+      }
+    }
+
   }
 
   object Config {

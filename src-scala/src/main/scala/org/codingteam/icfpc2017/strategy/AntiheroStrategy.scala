@@ -18,6 +18,7 @@ class AntiheroStrategy extends GreedyStrategy with Logging {
     val move = super.nextMove(deadLineMs, cancel)
     move match {
       case Messages.Claim(_, s, t) => Messages.Claim(commonState.me, s, t)
+      case Messages.Splurge(_, route) => Messages.Splurge(commonState.me, route)
       case _: Messages.Pass => Messages.Pass(commonState.me)
     }
   }
