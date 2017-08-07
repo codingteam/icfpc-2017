@@ -1,9 +1,12 @@
 #!/usr/bin/env perl
 
-%strategies;
-$score = 0;
-$fullfilledFutures = 0;
-$totalFutures = 0;
+use warnings;
+use strict;
+
+my %strategies;
+my $score = 0;
+my $fullfilledFutures = 0;
+my $totalFutures = 0;
 
 while (<>) {
   chomp;
