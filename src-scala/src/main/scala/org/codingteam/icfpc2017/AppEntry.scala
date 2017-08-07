@@ -63,8 +63,8 @@ object AppEntry extends App with Logging {
         runOfflineLoop(Some(s"logs/game-${Instant.now().toEpochMilli}.lson"), name)
 
       case _ =>
-        Logging.outputStream = None
-        runOfflineLoop(None, "delegating")
+        log.info("Hello")
+        log.info("Use --offline")
     }
 
   }

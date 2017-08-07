@@ -70,7 +70,9 @@ object HandlerLoop extends Logging {
             log.info(s"Our score: ${stop.getScore(fullState.commonState.me)}. Futures fullfilled: ${fullfilledFutures._1} of ${fullfilledFutures._2}")
             //log.info(s"Resulting graph: ${fullState.commonState.graph}.")
             return
-
+          case Some(ti: Timeout) =>
+            log.info(s"Timeout: $ti")
+            Pass(fullState.commonState.me)
           case _ => Pass(fullState.commonState.me)
         }
         server.writeToServer(response.toJson())

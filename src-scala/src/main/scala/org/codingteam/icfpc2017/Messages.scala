@@ -15,8 +15,7 @@ object Messages {
   implicit val formats = Serialization.formats(NoTypeHints)
 
 
-  abstract class Message {
-  }
+  abstract sealed class Message
 
   trait Serializable {
     def toJson(): JObject
@@ -181,7 +180,7 @@ object Messages {
 
   case class Stop(moves: List[Move], scores: List[Score], state: JValue = JNothing) extends Message {
     def getScore(punter: Punter): BigInt = {
-      scores.map({ s => (s.punter.id, s.score) }).toMap.get(punter.id).getOrElse(0)
+      scores find (_.punter == punter) map (_.score) getOrElse 0
     }
   }
 
@@ -203,6 +202,19 @@ object Messages {
         // FIXME
         val state = json \ "state"
         Stop(List(), getScoresList(json), state)
+      }
+    }
+  }
+
+  case class Timeout(t: Double) extends Message
+
+  object Timeout {
+    def unapply(json: JValue): Option[Timeout] = {
+      (json \ "timeout").toOption collect {
+        case JDecimal(d) => Timeout(d.toDouble)
+        case JInt(d) => Timeout(d.toDouble)
+        case JDouble(d) => Timeout(d.toDouble)
+        case JLong(d) => Timeout(d.toDouble)
       }
     }
   }
@@ -232,6 +244,7 @@ object Messages {
       case SetupRq(setup) => Some(setup)
       case MoveRq(move) => Some(move)
       case Stop(stop) => Some(stop)
+      case Timeout(ti) => Some(ti)
       case _ => None
     }
   }
