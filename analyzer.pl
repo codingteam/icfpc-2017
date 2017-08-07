@@ -9,11 +9,16 @@ my $score = 0;
 my $fullfilledFutures = 0;
 my $totalFutures = 0;
 
+my $currentStrategy = "";
+my $lastScore = 0;
 while (<>) {
   chomp;
   if (/: Selected strategy: org.codingteam.icfpc2017.strategy.([a-zA-Z]+)/) {
-    # printf("Strategy: $1\n");
-    $strategies{$1}++;
+    $currentStrategy = $1;
+  }
+  if (/INFO o.c.i.HandlerLoop\$: Our expected score: (\d+)/) {
+    $strategies{$currentStrategy} += $1 - $lastScore;
+    $lastScore = $1;
   }
   if (/INFO o.c.i.HandlerLoop\$: Our score: (\d+). Futures fullfilled: (\d+) of (\d+)/) {
     $score = $1;
