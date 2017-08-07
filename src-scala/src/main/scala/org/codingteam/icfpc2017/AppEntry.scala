@@ -93,7 +93,7 @@ object AppEntry extends App with Logging {
         (1.0, new DumbObstructorStrategy()),
         (0.5, new RandomConnectorStrategy())),
         useBackgroundThreads = true,
-        alpha = 2.0)
+        alpha = 1.5)
       case "delegating" => new DelegatingStrategy(Seq(
         new GreedyStrategy(),
         new FutureStrategy(),

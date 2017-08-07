@@ -130,6 +130,7 @@ class FutureStrategy extends Strategy with Logging {
 
   override def goodMoveProbability(): Double = {
     val score = graph.futuresScore(commonState.futures, me)
+    log.debug(s"Futures score is $score.")
     if (score < 0) {
       0.99
     } else if (score < 8) {
