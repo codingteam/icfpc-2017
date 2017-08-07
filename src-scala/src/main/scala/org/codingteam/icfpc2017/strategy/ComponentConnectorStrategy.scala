@@ -191,7 +191,7 @@ class ComponentConnectorStrategy extends Strategy with Logging {
       componentsNumber match {
         case 0 => 0.0
         case 1 => 0.8
-        case n if n > 1 => 1.0
+        case n if n > 1 => 0.95
       }
     }
   }
