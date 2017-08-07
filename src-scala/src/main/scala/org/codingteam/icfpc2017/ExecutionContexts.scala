@@ -7,9 +7,9 @@ import scala.concurrent.{ExecutionContext, Future}
 object ExecutionContexts {
   lazy implicit val backgroundContext: ExecutionContext =
     ExecutionContext.fromExecutorService(new ThreadPoolExecutor(
-      Runtime.getRuntime.availableProcessors(),
-      Runtime.getRuntime.availableProcessors() * 2,
-      30, TimeUnit.SECONDS,
+      1,
+      Runtime.getRuntime.availableProcessors() + 1,
+      10, TimeUnit.SECONDS,
       new LinkedBlockingDeque(),
       daemonFactory,
       rejectedExecutionHandler))
