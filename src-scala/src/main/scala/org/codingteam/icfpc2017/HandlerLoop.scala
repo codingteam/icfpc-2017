@@ -66,7 +66,8 @@ object HandlerLoop extends Logging {
             m
 
           case Some(stop: Stop) =>
-            log.info("Our score: " + stop.getScore(fullState.commonState.me))
+            val fullfilledFutures = fullState.commonState.getFutureStats
+            log.info(s"Our score: ${stop.getScore(fullState.commonState.me)}. Futures fullfilled: ${fullfilledFutures._1} of ${fullfilledFutures._2}")
             //log.info(s"Resulting graph: ${fullState.commonState.graph}.")
             return
 
