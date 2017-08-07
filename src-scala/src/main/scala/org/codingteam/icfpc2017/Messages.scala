@@ -55,6 +55,7 @@ object Messages {
         case Some(list) => list.map(_.toJson)
       }
     }
+
     def toJson(): JObject = {
       if (state == JNothing)
         JObject("ready" -> punter.id, "futures" -> futuresJson)
@@ -123,6 +124,32 @@ object Messages {
     }
   }
 
+  case class Splurge(punter: Punter, route: List[SiteId]) extends Move {
+    def toJson(): JObject = {
+      JObject(
+        "splurge" ->
+          (("punter" -> punter.id) ~
+            ("route" -> route)),
+        "state" -> state
+      )
+    }
+  }
+
+  object IsSplurge {
+    def unapply(json: JValue): Option[Splurge] = {
+      for {
+        splurge <- (json \ "splurge").toOption
+        JInt(id) <- (splurge \ "punter").toOption
+        JArray(arr) <- (splurge \ "route").toOption
+      } yield Splurge(Punter(1),
+          arr flatMap {
+            case JInt(site) => Some(site)
+            case _ => None
+          }
+        )
+    }
+  }
+
   case class Pass(punter: Punter) extends Move {
     def toJson(): JObject = if (state == JNothing) {
       "pass" -> ("punter" -> punter.id)
@@ -188,7 +215,8 @@ object Messages {
     json match {
       case Pass(pass) => Some(pass)
       case IsClaim(claim) => Some(claim)
-      case _ => None
+      case IsSplurge(splurge) => Some(splurge)
+      case _ => None // throw new Exception(json.toString)
     }
   }
 
