@@ -20,7 +20,7 @@ class DumbObstructorStrategy extends Strategy with Logging {
 
   override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     val allCandidates = graph.getForeignNeighbours(me, commonState.punterCount)
-    log.debug(s"All: $allCandidates")
+    //log.debug(s"All: $allCandidates")
     val bestPunter = getBestPunter()._1
     val candidates: Iterable[Graph[Node, LUnDiEdge]#EdgeT] = allCandidates.get(Punter(bestPunter)).getOrElse(List())
 
@@ -74,7 +74,7 @@ class DumbObstructorStrategy extends Strategy with Logging {
 
   override def goodMoveProbability(): Double = {
     // TODO: move probability.
-    0.3
+    rng.nextDouble
   }
 
 }
