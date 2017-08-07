@@ -55,7 +55,7 @@ class DelegatingStrategy(val strategies: Seq[Strategy],
     }
 
     try {
-      selected.nextMove(deadLineMs, cancel)
+      getMove(selected)
     } catch {
       case _: CancellationException => Messages.Pass(me)
     }
