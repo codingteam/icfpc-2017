@@ -37,7 +37,7 @@ object Messages {
     }
   }
 
-  case class Settings(futures: Boolean)
+  case class Settings(futures: Boolean, options: Boolean)
 
   case class SetupRq(punter: BigInt, punters: Int, map: Map, settings: Option[Settings]) extends Message
 
@@ -125,6 +125,33 @@ object Messages {
     }
   }
 
+  case class AnOption(override val punter: Punter, source: Site, target: Site) extends Move {
+    def toJson(): JObject = if (state == JNothing) {
+      "option" ->
+        ("punter" -> punter.id) ~
+          ("source" -> source.id) ~
+          ("target" -> target.id)
+    } else {
+      JObject(
+        "option" ->
+          (("punter" -> punter.id) ~
+            ("source" -> source.id) ~
+            ("target" -> target.id)),
+        "state" -> state
+      )
+    }
+  }
+
+  object IsOption {
+    def unapply(json: JValue): Option[AnOption] = {
+      for {
+        claim <- (json \ "option").toOption
+        JInt(id) <- (claim \ "punter").toOption
+        JInt(source) <- (claim \ "source").toOption
+        JInt(target) <- (claim \ "target").toOption
+      } yield AnOption(Punter(id), Site(source), Site(target))
+    }
+  }
   case class Splurge(override val punter: Punter, route: List[SiteId]) extends Move {
     def toJson(): JObject = {
       JObject(
@@ -227,6 +254,7 @@ object Messages {
       case Pass(pass) => Some(pass)
       case IsClaim(claim) => Some(claim)
       case IsSplurge(splurge) => Some(splurge)
+      case IsOption(option) => Some(option)
       case _ => None // throw new Exception(json.toString)
     }
   }

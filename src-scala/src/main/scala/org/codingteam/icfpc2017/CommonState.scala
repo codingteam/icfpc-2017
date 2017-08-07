@@ -4,19 +4,19 @@ import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.GameMap.Site
-import org.codingteam.icfpc2017.Messages.{Claim, Move, Pass, Settings, Splurge}
+import org.codingteam.icfpc2017.Messages.{Claim, Move, Pass, Settings, Splurge, AnOption}
 import org.codingteam.icfpc2017.futures.Future
 
 /**
   * Common state of all strategies.
   */
-class CommonState {
+class CommonState extends Logging {
 
   var me: Punter = Punter(0)
   var punterCount: Int = 1
   var map: GameMap.Map = GameMap.Map.createEmpty
   var graph: GraphMap = GraphMap.fromMap(map)
-  var settings: Option[Settings] = Some(Settings(false))
+  var settings: Option[Settings] = Some(Settings(false, false))
   var futures: Option[List[Future]] = None
   var lastPassCount: Int = 0
 
@@ -46,12 +46,15 @@ class CommonState {
             graph.mark(sourceNode, targetNode, punter)
           //println(s"Splurge $sourceNode $targetNode")
         })
+      case AnOption(punter, source, target) =>
+        log.error(s"We do not process Option $punter $source $target.")
       case _ =>
     }
     for (m <- moves if m.punter == me) {
       m match {
         case _: Pass => lastPassCount += 1
         case _: Claim => lastPassCount = 0
+        case _: AnOption => lastPassCount = 0
         case _: Splurge => lastPassCount = 0
       }
     }

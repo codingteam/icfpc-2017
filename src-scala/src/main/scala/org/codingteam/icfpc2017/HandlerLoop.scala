@@ -30,7 +30,7 @@ object HandlerLoop extends Logging {
           val punter = Punter(setup.punter)
           val futureGenerator = RandomFutureGenerator(setup.map, futureGeneratorDistance, futuresCount)
           val futures = setup.settings match {
-            case Some(Settings(true)) => Some(futureGenerator.generate())
+            case Some(Settings(true,_)) => Some(futureGenerator.generate())
             case _ => None
           }
           log.debug(s"Generated futures: $futures.")
@@ -103,7 +103,7 @@ object HandlerLoop extends Logging {
           // -- realy fucking imperative code here --
           val futureGenerator = RandomFutureGenerator(setup.map, futureGeneratorDistance, futuresCount)
           val futures = setup.settings match {
-            case Some(Settings(true)) => Some(futureGenerator.generate())
+            case Some(Settings(true,_)) => Some(futureGenerator.generate())
             case _ => None
           }
           val fullState = new FullState(CommonState(setup.map, setup.punter, setup.punters, setup.settings, futures), strategy)
