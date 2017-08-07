@@ -56,15 +56,15 @@ object AppEntry extends App with Logging {
 
       case Array("--offline") =>
         Logging.outputStream = None
-        runOfflineLoop(None, "codingpunter")
+        runOfflineLoop(None, "mixed")
 
       case Array("--offline-with-log", name) =>
         Logging.outputStream = Some(new PrintStream(new File(s"logs/game-${Instant.now().toEpochMilli}.lson")))
         runOfflineLoop(Some(s"logs/game-${Instant.now().toEpochMilli}.lson"), name)
 
       case _ =>
-        Logging.outputStream = Some(System.err)
-        log.info("Hello!")
+        Logging.outputStream = None
+        runOfflineLoop(None, "mixed")
     }
 
   }
