@@ -22,7 +22,8 @@ import scala.util.Random
   * S    - множество всех стратегий
   */
 class MixedStrategy(val strategies: Seq[(Double, Strategy)],
-                    val useBackgroundThreads: Boolean) extends Strategy with Logging {
+                    val useBackgroundThreads: Boolean,
+                    val alpha: Double) extends Strategy with Logging {
   require(strategies.nonEmpty)
 
   private val W = strategies.map(_._1).sum
@@ -41,7 +42,7 @@ class MixedStrategy(val strategies: Seq[(Double, Strategy)],
   //  *     p_i  - good move probability, которую вернула стратегия i
   //  *     S    - множество всех стратегий
   override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
-    val ps = strategies.map(s => (s._2, s._2.goodMoveProbability() * s._1))
+    val ps = strategies.map(s => (s._2, math.pow(s._2.goodMoveProbability() * s._1, alpha)))
     val W = ps.map(_._2).sum
 
     @inline def getMove(s: Strategy): Move = {
