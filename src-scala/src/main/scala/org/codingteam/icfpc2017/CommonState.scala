@@ -16,7 +16,7 @@ class CommonState {
   var punterCount: Int = 1
   var map: GameMap.Map = GameMap.Map.createEmpty
   var graph: GraphMap = GraphMap.fromMap(map)
-  var settings: Option[Settings] = Some(Settings(false))
+  var settings: Option[Settings] = Some(Settings(false, false))
   var futures: Option[List[Future]] = None
   var lastPassCount: Int = 0
 

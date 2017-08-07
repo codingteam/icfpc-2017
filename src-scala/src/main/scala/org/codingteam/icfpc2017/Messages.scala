@@ -38,7 +38,7 @@ object Messages {
     }
   }
 
-  case class Settings(futures: Boolean)
+  case class Settings(futures: Boolean, options: Boolean)
 
   case class SetupRq(punter: BigInt, punters: Int, map: Map, settings: Option[Settings]) extends Message
 

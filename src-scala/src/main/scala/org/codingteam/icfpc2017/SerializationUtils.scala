@@ -46,6 +46,7 @@ object SerializationUtils {
     os.writeBoolean(present)
     if (present) {
       os.writeBoolean(settings.get.futures)
+      os.writeBoolean(settings.get.options)
     }
   }
 
@@ -53,7 +54,8 @@ object SerializationUtils {
     val present = is.readBoolean()
     if (present) {
       val futures = is.readBoolean()
-      Some(Settings(futures))
+      val options = is.readBoolean()
+      Some(Settings(futures, options))
     } else {
       None
     }
