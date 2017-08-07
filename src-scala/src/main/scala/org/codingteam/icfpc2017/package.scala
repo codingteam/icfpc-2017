@@ -78,8 +78,16 @@ package object icfpc2017 {
     def toOption[T](v: => T): Option[T] = if (b) Some(v) else None
   }
 
-  class Canceller {
-    @volatile var isCancelled: Boolean = false
+  class Canceller(val deadlineMs: Long) {
+    @volatile var _isCancelled: Boolean = false
+
+    def isCancelled = _isCancelled || {
+      if (System.currentTimeMillis() >= deadlineMs)
+        _isCancelled = true
+      _isCancelled
+    }
+
+    def isCancelled_=(v: Boolean): Unit = _isCancelled = v
 
     def checkCancelled(): Unit = {
       if (isCancelled)
@@ -87,4 +95,5 @@ package object icfpc2017 {
     }
 
   }
+
 }

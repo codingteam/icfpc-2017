@@ -53,7 +53,7 @@ object HandlerLoop extends Logging {
             fullState.updateState(move.moves)
 
             val deadLine = System.currentTimeMillis() + 1000 - 100
-            val canceller = new Canceller
+            val canceller = new Canceller(deadLine)
             val m = strategy.nextMove(deadLine, canceller)
             canceller.isCancelled = true
 
@@ -120,7 +120,7 @@ object HandlerLoop extends Logging {
           fullState.updateState(move.moves)
 
           val deadLine = startTime + 800
-          val canceller = new Canceller
+          val canceller = new Canceller(deadLine)
           val nextMove = strategy.nextMove(deadLine, canceller)
           canceller.isCancelled = true
 
