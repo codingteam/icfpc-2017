@@ -1,6 +1,6 @@
 package org.codingteam.icfpc2017.strategy
 import org.codingteam.icfpc2017.Common.Punter
-import org.codingteam.icfpc2017.{Common, Logging, Messages}
+import org.codingteam.icfpc2017.{Canceller, Common, Logging, Messages}
 
 import scala.util.Random
 
@@ -14,15 +14,15 @@ class AntiheroStrategy extends GreedyStrategy with Logging {
     Punter(index)
   }
 
-  override def nextMove(): Messages.Move = {
-    val move = super.nextMove()
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Messages.Move = {
+    val move = super.nextMove(deadLineMs, cancel)
     move match {
       case Messages.Claim(_, s, t) => Messages.Claim(commonState.me, s, t)
       case _: Messages.Pass => Messages.Pass(commonState.me)
     }
   }
 
-  override def goodMoveProbability(): Double = super.goodMoveProbability() * 0.1
+  override def goodMoveProbability(): Double = super.goodMoveProbability() * 0.7
 
   override def updateState(moves: Seq[Messages.Move]): Unit = super.updateState(moves)
 }

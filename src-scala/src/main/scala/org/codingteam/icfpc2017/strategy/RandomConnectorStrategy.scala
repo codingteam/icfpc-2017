@@ -3,7 +3,7 @@ package org.codingteam.icfpc2017.strategy
 import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Messages.{Claim, Move, Pass}
-import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap, Logging, Messages, SerializationUtils}
+import org.codingteam.icfpc2017.{Canceller, CommonState, GameMap, GraphMap, Logging, Messages, SerializationUtils}
 
 import scala.util.Random
 
@@ -22,7 +22,7 @@ class RandomConnectorStrategy extends Strategy with Logging {
     _graph = GraphMap.fromMap(s.map)
   }
 
-  override def nextMove(): Move = {
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     val neighbours = graph.getPunterNeighbours(me)
     val candidates =
       if (neighbours.isEmpty) {
@@ -49,10 +49,10 @@ class RandomConnectorStrategy extends Strategy with Logging {
       val sourceNode = map.siteToNode(from)
       val targetNode = map.siteToNode(to)
       graph.mark(sourceNode, targetNode, me)
-      val score = graph.score(me)
+      /*val score = graph.score(me, commonState.futures)
       val our = graph.getPunterEdges(me).size
       val total = graph.graph.edges.size
-      log.info(s"Our expected score: $score, our edges: $our, total edges: $total")
+      log.info(s"Our expected score: $score, our edges: $our, total edges: $total")*/
       Messages.Claim(me, from, to)
     }
   }
@@ -72,7 +72,7 @@ class RandomConnectorStrategy extends Strategy with Logging {
 
 
   override def goodMoveProbability(): Double = {
-    1
+    0.5
   }
 
   override def read(is: InputStream): Unit = {

@@ -2,15 +2,12 @@ package org.codingteam.icfpc2017.strategy
 
 import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
+import org.codingteam.icfpc2017.GameMap.{Mine, Site}
 import org.codingteam.icfpc2017.Messages.{Claim, Move, Pass}
-import org.codingteam.icfpc2017.GameMap.{Node,Site,Mine}
-import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap, Logging, Messages, SerializationUtils}
 import org.codingteam.icfpc2017.futures.Future
+import org.codingteam.icfpc2017.{Canceller, CommonState, GameMap, GraphMap, Logging, Messages, SerializationUtils}
 
 import scala.util.Random
-import scalax.collection.edge.LUnDiEdge
-import scalax.collection.mutable.Graph
-import scalax.collection.edge.LBase.LEdgeImplicits
 
 /**
   * Created by portnov on 8/6/17.
@@ -28,7 +25,7 @@ class FutureStrategy extends Strategy with Logging {
     _graph = GraphMap.fromMap(s.map)
   }
 
-  override def nextMove(): Move = {
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     if (!commonState.futures.isDefined) {
       return Pass(me)
     } else {
@@ -36,8 +33,9 @@ class FutureStrategy extends Strategy with Logging {
       val freeSubgraph = g filter g.having(edge = {
         edge: g.EdgeT => edge.label == None
       })
-      val moves = commonState.futures.get.flatMap({
-        future: Future => {
+      val moves = commonState.futures.get.flatMap {
+        future: Future =>
+          cancel.checkCancelled()
           val mineNode = g get (Mine(future.sourceId))
           // FIXME
           val ourNodes = mineNode.withSubgraph(edges = _.label == me)
@@ -95,19 +93,17 @@ class FutureStrategy extends Strategy with Logging {
                     val sourceNode = map.siteToNode(from)
                     val targetNode = map.siteToNode(to)
                     graph.mark(sourceNode, targetNode, me)
-                    val score = graph.score(me)
+                    /*val score = graph.score(me, commonState.futures)
                     val our = graph.getPunterEdges(me).size
                     val total = graph.graph.edges.size
-                    log.info(s"Our expected score: $score, our edges: $our, total edges: $total")
+                    log.info(s"Our expected score: $score, our edges: $our, total edges: $total")*/
                     Some(Messages.Claim(me, from, to))
                   }
                 }
               }
             }
           }
-
-        }
-      })
+      }
 
       moves.headOption match {
         case None =>
@@ -133,11 +129,19 @@ class FutureStrategy extends Strategy with Logging {
 
 
   override def goodMoveProbability(): Double = {
-    val (fullfilled, total) = commonState.getFutureStats
-    if (fullfilled < total) {
-      (total - fullfilled) / 2.0
+    val score = graph.futuresScore(commonState.futures, me)
+    log.debug(s"Futures score is $score.")
+    if (score < 0) {
+      0.99
+    } else if (score < 8) {
+      0.5
     } else {
-      0
+      val (fullfilled, total) = commonState.getFutureStats()
+      if (fullfilled == total) {
+        0
+      } else {
+        0.3
+      }
     }
   }
 

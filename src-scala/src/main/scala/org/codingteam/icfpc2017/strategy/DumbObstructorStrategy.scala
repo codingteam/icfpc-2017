@@ -1,7 +1,7 @@
 package org.codingteam.icfpc2017.strategy
 
 import org.codingteam.icfpc2017.Messages.{Move, Pass}
-import org.codingteam.icfpc2017.{GameMap, Messages, Logging}
+import org.codingteam.icfpc2017.{Canceller, GameMap, Logging, Messages}
 
 import scala.util.Random
 
@@ -12,7 +12,7 @@ class DumbObstructorStrategy extends Strategy with Logging {
 
   private var rng = Random
 
-  override def nextMove(): Move = {
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     var candidates = graph.getFreeNearMines()
     if (candidates.isEmpty) {
       candidates = graph.getForeignNeighbours(me)
@@ -36,10 +36,10 @@ class DumbObstructorStrategy extends Strategy with Logging {
       val sourceNode = map.siteToNode(from)
       val targetNode = map.siteToNode(to)
       graph.mark(sourceNode, targetNode, me)
-      val score = graph.score(me)
+      /*val score = graph.score(me, commonState.futures)
       val our = graph.getPunterEdges(me).size
       val total = graph.graph.edges.size
-      log.debug(s"Our expected score: $score, our edges: $our, total edges: $total")
+      log.debug(s"Our expected score: $score, our edges: $our, total edges: $total")*/
       Messages.Claim(me, from, to)
     }
   }
@@ -47,7 +47,8 @@ class DumbObstructorStrategy extends Strategy with Logging {
   override def updateState(moves: Seq[Move]): Unit = {}
 
   override def goodMoveProbability(): Double = {
-    1
+    // TODO: move probability.
+    0.3
   }
 
 }

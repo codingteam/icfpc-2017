@@ -3,7 +3,7 @@ package org.codingteam.icfpc2017.strategy
 import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Messages.{Claim, Move}
-import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap, Messages, SerializationUtils}
+import org.codingteam.icfpc2017.{Canceller, CommonState, GameMap, GraphMap, Messages, SerializationUtils}
 
 import scala.util.Random
 
@@ -23,7 +23,7 @@ class RandomWalkerStrategy extends Strategy {
     _graph = GraphMap.fromMap(s.map)
   }
 
-  override def nextMove(): Move = {
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     val freeEdges = graph.getFreeEdges()
     val index = rng.nextInt(freeEdges.size)
     val edge = freeEdges.toIndexedSeq(index)
@@ -52,7 +52,8 @@ class RandomWalkerStrategy extends Strategy {
   }
 
   override def goodMoveProbability(): Double = {
-    1 / graph.getFreeEdges().size
+    val free = graph.getFreeEdges().size
+    if (free == 0) 0.0 else 0.2
   }
 
   override def read(is: InputStream): Unit = {

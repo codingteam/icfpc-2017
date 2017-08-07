@@ -4,7 +4,7 @@ import java.io.{InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.Messages.Move
-import org.codingteam.icfpc2017.{CommonState, GameMap, GraphMap, Logging}
+import org.codingteam.icfpc2017.{Canceller, CommonState, GameMap, GraphMap}
 
 
 /**
@@ -24,7 +24,7 @@ trait Strategy {
 
   def graph: GraphMap = commonState.graph
 
-  def nextMove(): Move
+  def nextMove(deadLineMs: Long, cancel: Canceller): Move
 
   def updateState(moves: Seq[Move])
 

@@ -2,6 +2,7 @@ package org.codingteam
 
 import java.io.{InputStream, OutputStream}
 import java.net.Socket
+import java.util.concurrent.CancellationException
 
 import org.json4s.JsonAST.JValue
 
@@ -85,6 +86,24 @@ package object icfpc2017 {
 
   implicit class BooleanExt(val b: Boolean) extends AnyVal {
     def toOption[T](v: => T): Option[T] = if (b) Some(v) else None
+  }
+
+  class Canceller(val deadlineMs: Long) {
+    @volatile var _isCancelled: Boolean = false
+
+    def isCancelled = _isCancelled || {
+      if (System.currentTimeMillis() >= deadlineMs)
+        _isCancelled = true
+      _isCancelled
+    }
+
+    def isCancelled_=(v: Boolean): Unit = _isCancelled = v
+
+    def checkCancelled(): Unit = {
+      if (isCancelled)
+        throw new CancellationException("Cancelled")
+    }
+
   }
 
 }

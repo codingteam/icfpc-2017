@@ -4,13 +4,12 @@ import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.GameMap.Node
 import org.codingteam.icfpc2017.Messages.{Move, Pass}
-import org.codingteam.icfpc2017.{GameMap, Messages, Logging}
+import org.codingteam.icfpc2017.{Canceller, GameMap, Logging, Messages}
 
 import scala.collection.mutable.{Map => MMap, Set => MSet}
 import scala.util.Random
 import scalax.collection.edge.LUnDiEdge
 import scalax.collection.mutable.Graph
-import scalax.collection.edge.LBase.LEdgeImplicits
 
 /**
   * Created by portnov on 8/5/17.
@@ -19,7 +18,7 @@ class ComponentConnectorStrategy extends Strategy with Logging {
 
   private var rng = Random
 
-  private var noPaths : Boolean = false
+  private var noPaths: Boolean = false
 
   def getComponents(): Seq[(Iterable[Node], Int)] = {
     val g = graph.graph
@@ -68,7 +67,7 @@ class ComponentConnectorStrategy extends Strategy with Logging {
 
     selectedPair match {
       case None => {
-        log.debug(s"Can not select a pair of nodes to connect components #${component1._2} - #${component2._2}")
+        // log.debug(s"Can not select a pair of nodes to connect components #${component1._2} - #${component2._2}")
         None
       }
       case Some(bestNodes) =>
@@ -93,7 +92,7 @@ class ComponentConnectorStrategy extends Strategy with Logging {
     }
   }
 
-  override def nextMove(): Move = {
+  override def nextMove(deadLineMs: Long, cancel: Canceller): Move = {
     if (noPaths) {
       log.debug("Last time there were no paths between components, i think they could not appear now.")
       return Pass(me)
@@ -111,9 +110,9 @@ class ComponentConnectorStrategy extends Strategy with Logging {
       log.debug(c)
     }*/
 
-    var bestPath : Option[Graph[Node, LUnDiEdge]#Path] = None
+    var bestPath: Option[Graph[Node, LUnDiEdge]#Path] = None
     var bestRho = 1000500
-    var bestComponentIdxs: (Int,Int) = (0,0)
+    var bestComponentIdxs: (Int, Int) = (0, 0)
 
     if (componentsNumber > 1) {
       for {component1 <- components
@@ -122,7 +121,7 @@ class ComponentConnectorStrategy extends Strategy with Logging {
 
         assert(!component1._1.isEmpty)
         assert(!component1._1.isEmpty)
-
+        cancel.checkCancelled()
         calcComponentsPath(freeSubgraph, component1, component2) match {
           case None =>
           case Some(path) => {
@@ -163,10 +162,10 @@ class ComponentConnectorStrategy extends Strategy with Logging {
           val sourceNode = map.siteToNode(from)
           val targetNode = map.siteToNode(to)
           graph.mark(sourceNode, targetNode, me)
-          val score = graph.score(me)
+          /*val score = graph.score(me, commonState.futures)
           val our = graph.getPunterEdges(me).size
           val total = graph.graph.edges.size
-          log.debug(s"Our expected score: $score, our edges: $our, total edges: $total")
+          log.debug(s"Our expected score: $score, our edges: $our, total edges: $total")*/
           Messages.Claim(me, from, to)
         }
       }
@@ -185,14 +184,14 @@ class ComponentConnectorStrategy extends Strategy with Logging {
         edge: g.EdgeT => (edge.label != None) && (edge.label == me)
       })
       val componentsNumber = getComponents().size
-      log.debug(s"Found components: ${componentsNumber}")
-      if (componentsNumber > 1) {
-        /*for (c <- components) {
-          log.debug(c)
-        }*/
-        componentsNumber
-      } else {
-        0.0
+      log.debug(s"Found components: $componentsNumber")
+      /*for (c <- components) {
+        log.debug(c)
+      }*/
+      componentsNumber match {
+        case 0 => 0.0
+        case 1 => 0.8
+        case n if n > 1 => 0.95
       }
     }
   }

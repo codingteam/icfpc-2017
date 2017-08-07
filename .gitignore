@@ -9,3 +9,4 @@ src-haskell/Main
 src-scala/src/main/main.iml
 /deploy/codingteam-punter.jar
 /deploy/src/
+/*.tar.gz

@@ -3,8 +3,8 @@ package org.codingteam.icfpc2017
 import java.io.{DataInputStream, DataOutputStream, InputStream, OutputStream}
 
 import org.codingteam.icfpc2017.Common.Punter
-import org.codingteam.icfpc2017.Messages.{Claim, Move, Settings}
-import org.codingteam.icfpc2017.GameMap.{SiteId, Site}
+import org.codingteam.icfpc2017.GameMap.Site
+import org.codingteam.icfpc2017.Messages.{Claim, Move, Pass, Settings, Splurge}
 import org.codingteam.icfpc2017.futures.Future
 
 /**
@@ -16,8 +16,9 @@ class CommonState {
   var punterCount: Int = 1
   var map: GameMap.Map = GameMap.Map.createEmpty
   var graph: GraphMap = GraphMap.fromMap(map)
-  var settings : Option[Settings] = Some(Settings(false))
+  var settings: Option[Settings] = Some(Settings(false))
   var futures: Option[List[Future]] = None
+  var lastPassCount: Int = 0
 
   def init(map: GameMap.Map, punterId: BigInt, punterCount: Int, settings: Option[Settings], futures: Option[List[Future]]): Unit = {
     this.map = map
@@ -29,10 +30,30 @@ class CommonState {
   }
 
   def updateState(moves: Seq[Move]): Unit = {
-    for (Claim(punter, source, target) <- moves) {
-      val sourceNode = map.siteToNode(source)
-      val targetNode = map.siteToNode(target)
-      graph.mark(sourceNode, targetNode, punter)
+    moves.foreach {
+      case Claim(punter, source, target) =>
+        val sourceNode = map.siteToNode(source)
+        val targetNode = map.siteToNode(target)
+        graph.mark(sourceNode, targetNode, punter)
+
+      case Splurge(punter, sites) =>
+        //println("!!!Splurge!")
+        val pairs = sites.zip(sites.tail)
+        pairs.foreach({
+          case (source, target) =>
+            val sourceNode = map.siteToNode(Site(source))
+            val targetNode = map.siteToNode(Site(target))
+            graph.mark(sourceNode, targetNode, punter)
+          //println(s"Splurge $sourceNode $targetNode")
+        })
+      case _ =>
+    }
+    for (m <- moves if m.punter == me) {
+      m match {
+        case _: Pass => lastPassCount += 1
+        case _: Claim => lastPassCount = 0
+        case _: Splurge => lastPassCount = 0
+      }
     }
   }
 
@@ -53,7 +74,7 @@ class CommonState {
       case None => (0, 0)
       case Some(list) => {
         val fullfilled = getFullfilledFutures().size
-        val total = futures.get.size
+        val total = list.size
         (fullfilled, total)
       }
     }
@@ -63,6 +84,7 @@ class CommonState {
     val data = new DataInputStream(is)
     me = Punter(data.readLong())
     punterCount = data.readInt()
+    lastPassCount = data.readInt()
     //SerializationUtils.checkMagic("FU", data)
     futures = SerializationUtils.readFutures(data)
     //SerializationUtils.checkMagic("SET", data)
@@ -77,6 +99,7 @@ class CommonState {
     val data = new DataOutputStream(os)
     data.writeLong(me.id.toLong)
     data.writeInt(punterCount)
+    data.writeInt(lastPassCount)
     //SerializationUtils.writeMagic("FU", data)
     SerializationUtils.writeFutures(futures, data)
     //SerializationUtils.writeMagic("SET", data)

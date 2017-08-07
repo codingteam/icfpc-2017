@@ -39,7 +39,7 @@ object AppEntry extends App with Logging {
         log.debug(map)
         log.debug(map.getFreeEdges())
         log.debug(map.getPunterSubgraph(Punter(666)))
-        log.debug(map.score(Punter(666)))
+        log.debug(map.score(Punter(666), None))
 
       case Array("--tcp", host, Parsing.I(port)) =>
         runTcpLoop(host, port, None, "codingpunter")
@@ -56,7 +56,7 @@ object AppEntry extends App with Logging {
 
       case Array("--offline") =>
         Logging.outputStream = None
-        runOfflineLoop(None, "codingpunter")
+        runOfflineLoop(None, "delegating")
 
       case Array("--offline-with-log", name) =>
         Logging.outputStream = Some(new PrintStream(new File(s"logs/game-${Instant.now().toEpochMilli}.lson")))
@@ -73,8 +73,8 @@ object AppEntry extends App with Logging {
         HandlerLoop.runLoop(StreamParser.connect("127.0.0.1", port, None), strategy, "whatever")
 
       case _ =>
-        Logging.outputStream = Some(System.err)
-        log.info("Hello!")
+        Logging.outputStream = None
+        runOfflineLoop(None, "delegating")
     }
 
   }
@@ -86,28 +86,36 @@ object AppEntry extends App with Logging {
 
   def runOfflineLoop(log: Option[String], name: String): Unit = {
     val strategy = selectStrategy(name)
-    HandlerLoop.runOfflineMove(StreamParser.connectToStdInOut(log), strategy, name)
+    HandlerLoop.runOfflineMove(StreamParser.connectToStdInOut(log), strategy, "codingpunter")
   }
 
   def selectStrategy(name: String): Strategy = {
     name match {
-      case "codingpunter-dumb-obstructor" => new DelegatingStrategy(Seq(new DumbObstructorStrategy()))
-      case "random-codingpunter" => new DelegatingStrategy(Seq(new RandomConnectorStrategy()))
-      case "codingpunter" => new DelegatingStrategy(Seq(new GreedyStrategy()))
-      case "connector" => new DelegatingStrategy(Seq(new ComponentConnectorStrategy()))
+      case "codingpunter-dumb-obstructor" => new DelegatingStrategy(Seq(new DumbObstructorStrategy()), true)
+      case "random-codingpunter" => new DelegatingStrategy(Seq(new RandomConnectorStrategy()), true)
+      case "codingpunter" => new DelegatingStrategy(Seq(new GreedyStrategy()), true)
+      case "connector" => new DelegatingStrategy(Seq(new ComponentConnectorStrategy()), true)
       case "mixed" => new MixedStrategy(Seq(
         (2.0, new GreedyStrategy()),
-        (2.0, new FutureStrategy()),
+        (1.9, new FutureStrategy()),
         (1.0, new MineOccupationStrategy()),
         (1.0, new ComponentConnectorStrategy()),
         (1.0, new DumbObstructorStrategy()),
-        (0.5, new RandomConnectorStrategy())))
+        (0.5, new RandomConnectorStrategy())),
+        useBackgroundThreads = true,
+        alpha = 1.5)
+      case "delegating" => new DelegatingStrategy(Seq(
+        new GreedyStrategy(),
+        new FutureStrategy(),
+        new MineOccupationStrategy(),
+        new ComponentConnectorStrategy(),
+        new DumbObstructorStrategy(),
+        new RandomConnectorStrategy()),
+        useBackgroundThreads = true)
       case "antihero" => new AntiheroStrategy()
       case _ => throw new Exception("unsupported name: " + name)
     }
   }
-
-  // lazy val strategy = new DelegatingStrategy(Seq(new GreedyStrategy()))
 
   run()
 }

@@ -4,8 +4,8 @@ import java.io.EOFException
 
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.Messages._
-import org.codingteam.icfpc2017.strategy.Strategy
 import org.codingteam.icfpc2017.futures.RandomFutureGenerator
+import org.codingteam.icfpc2017.strategy.Strategy
 
 /**
   * Message processing cycle.
@@ -43,6 +43,8 @@ object HandlerLoop extends Logging {
       }
       strategy.commonState = fullState.commonState
 
+      var moveNumber = 1
+      val maxMoves = fullState.commonState.map.rivers.size
       while (true) {
         val request = server.readFromServer()
 
@@ -50,14 +52,22 @@ object HandlerLoop extends Logging {
           case Some(move: MoveRq) =>
             fullState.updateState(move.moves)
 
-            val m = strategy.nextMove()
+            val deadLine = System.currentTimeMillis() + 1000 - 100
+            val canceller = new Canceller(deadLine)
+            val m = strategy.nextMove(deadLine, canceller)
+            canceller.isCancelled = true
+
             fullState.updateState(Seq(m))
             val fullfilledFutures = fullState.commonState.getFutureStats
             log.info(s"Our futures fullfilled: ${fullfilledFutures._1} of ${fullfilledFutures._2}")
+            val score = fullState.commonState.graph.score(fullState.commonState.me, fullState.commonState.futures)
+            log.info(s"Our expected score: $score; this is move $moveNumber of max $maxMoves.")
+            moveNumber += 1
             m
 
           case Some(stop: Stop) =>
-            log.info("Our score: " + stop.getScore(fullState.commonState.me))
+            val fullfilledFutures = fullState.commonState.getFutureStats
+            log.info(s"Our score: ${stop.getScore(fullState.commonState.me)}. Futures fullfilled: ${fullfilledFutures._1} of ${fullfilledFutures._2}")
             //log.info(s"Resulting graph: ${fullState.commonState.graph}.")
             return
 
@@ -83,6 +93,7 @@ object HandlerLoop extends Logging {
       server.writeToServer(helloJson)
       // ignoring the response - nothing interesting there
       val helloResponse = server.readFromServer()
+      val startTime = System.currentTimeMillis()
 
       val request = server.readFromServer()
       Messages.parseServerMessageJson(request) match {
@@ -102,13 +113,17 @@ object HandlerLoop extends Logging {
         case Some(move: MoveRq) =>
           // ...and here
           val fullState = new FullState(new CommonState, strategy)
+
           fullState.readFromJson(move.state)
 
           strategy.commonState = fullState.commonState
 
           fullState.updateState(move.moves)
 
-          val nextMove = strategy.nextMove()
+          val deadLine = startTime + 800
+          val canceller = new Canceller(deadLine)
+          val nextMove = strategy.nextMove(deadLine, canceller)
+          canceller.isCancelled = true
 
           fullState.updateState(Seq(nextMove))
 

@@ -2,6 +2,7 @@ package org.codingteam.icfpc2017
 
 import org.codingteam.icfpc2017.Common.Punter
 import org.codingteam.icfpc2017.GameMap._
+import org.codingteam.icfpc2017.futures.Future
 
 import scala.collection.mutable.{Map => MMap, Set => MSet}
 import scalax.collection.edge.LUnDiEdge
@@ -11,6 +12,7 @@ import scalax.collection.edge.LBase.LEdgeImplicits
 case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
 
   object PunterImplicit extends LEdgeImplicits[Punter]
+
   import PunterImplicit._
 
   def getNodes: Iterable[Node] = graph.nodes
@@ -43,7 +45,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
     graph.addLEdge(source, target)(punter)
   }
 
-  def removeEdge(source: Node, target: Node) : Unit = {
+  def removeEdge(source: Node, target: Node): Unit = {
     val g = graph
     val sourceNode = g get source
     val targetNode = g get target
@@ -55,7 +57,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
 
   def distanceUncached(source: Node, target: Node): Int = {
     val g = graph
-    assert(! g.isEmpty)
+    assert(!g.isEmpty)
     if (source == target) {
       0
     } else {
@@ -74,9 +76,9 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
     }
   }
 
-  private var distanceCache : MMap[(Node,Node), Int] = MMap.empty
+  private var distanceCache: MMap[(Node, Node), Int] = MMap.empty
 
-  def getDistanceCacheCopy() : MMap[(Node, Node), Int] = {
+  def getDistanceCacheCopy(): MMap[(Node, Node), Int] = {
     return distanceCache.clone()
   }
 
@@ -90,13 +92,13 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
       case None => {
         val d = distanceUncached(source, target)
         //println(s"Cache miss: distance($source, $target) = $d")
-        distanceCache.put((source,target), d)
+        distanceCache.put((source, target), d)
         d
       }
     }
   }
 
-  def hasPath(source: Node, target: Node) : Boolean = {
+  def hasPath(source: Node, target: Node): Boolean = {
     val g = graph
     if ((g.contains(source)) && (g.contains(target))) {
       val sourceNode = g get source
@@ -111,13 +113,13 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
     }
   }
 
-  def getFreeEdges() : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+  def getFreeEdges(): Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
     graph.edges.filter {
       edge: Graph[Node, LUnDiEdge]#EdgeT => edge.label == None
     }
   }
 
-  def getFreeSubgraph() : GraphMap = {
+  def getFreeSubgraph(): GraphMap = {
     val g = graph
     val newGraph = g filter g.having(edge = {
       edge: g.EdgeT => edge.label == None
@@ -125,28 +127,28 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
     GraphMap(newGraph)
   }
 
-  def getPunterEdges(punter : Punter) : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+  def getPunterEdges(punter: Punter): Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
     val g = graph
     g.edges.filter {
       edge: g.EdgeT => (edge.label != None) && (edge.label == punter)
     }
   }
 
-  def getForeignEdges(punter : Punter) : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+  def getForeignEdges(punter: Punter): Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
     val g = graph
     g.edges.filter {
       edge: g.EdgeT => (edge.label != None) && (edge.label != punter)
     }
   }
 
-  def getNeighbours(startEdges : Set[Graph[Node, LUnDiEdge]#EdgeT]) : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+  def getNeighbours(startEdges: Set[Graph[Node, LUnDiEdge]#EdgeT]): Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
     if (startEdges.isEmpty) {
       List()
     } else {
-      val result : MSet[Graph[Node, LUnDiEdge]#EdgeT] = MSet()
-      startEdges.foreach({edge : Graph[Node, LUnDiEdge]#EdgeT =>
-        edge.nodes.foreach({node : Graph[Node, LUnDiEdge]#NodeT =>
-          node.edges.foreach({neighbour : Graph[Node, LUnDiEdge]#EdgeT =>
+      val result: MSet[Graph[Node, LUnDiEdge]#EdgeT] = MSet()
+      startEdges.foreach({ edge: Graph[Node, LUnDiEdge]#EdgeT =>
+        edge.nodes.foreach({ node: Graph[Node, LUnDiEdge]#NodeT =>
+          node.edges.foreach({ neighbour: Graph[Node, LUnDiEdge]#EdgeT =>
             val label = neighbour.label
             if (!startEdges.contains(neighbour) && label == None) {
               result += neighbour
@@ -159,17 +161,17 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
     }
   }
 
-  def getPunterNeighbours(punter : Punter) : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+  def getPunterNeighbours(punter: Punter): Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
     val punterEdges = getPunterEdges(punter).toSet
     getNeighbours(punterEdges)
   }
 
-  def getForeignNeighbours(punter : Punter) : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+  def getForeignNeighbours(punter: Punter): Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
     val foreignEdges = getForeignEdges(punter).toSet
     getNeighbours(foreignEdges)
   }
 
-  def getFreeNearMines() : Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
+  def getFreeNearMines(): Iterable[Graph[Node, LUnDiEdge]#EdgeT] = {
     val free = getFreeEdges
     val mines = getMineNodes.toSet
 
@@ -178,7 +180,7 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
     }
   }
 
-  def getPunterSubgraph(punter : Punter) : GraphMap = {
+  def getPunterSubgraph(punter: Punter): GraphMap = {
     val g = graph
     val newGraph = g filter g.having(edge = {
       edge: g.EdgeT => (edge.label != None) && (edge.label == punter)
@@ -186,11 +188,42 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
     GraphMap(newGraph)
   }
 
-  def punterDistance(punter : Punter, source: Node, target: Node) : Int = {
+  def punterDistance(punter: Punter, source: Node, target: Node): Int = {
     getPunterSubgraph(punter).distance(source, target)
   }
 
-  def scoreMineSite(punter : Punter, subgraph: GraphMap, mine : Node, site : Node) : Int = {
+  def futuresScore(futures: Option[List[Future]], punter: Punter): Int = {
+    var result = 0
+    val subgraph = getPunterSubgraph(punter).graph
+    if (futures.isDefined) {
+      futures.get.foreach({
+        future: Future =>
+          val mine = Mine(future.sourceId)
+          val site = Site(future.targetId)
+          val node1Opt = subgraph find mine
+          val node2Opt = subgraph find site
+          val d = distance(mine, site)
+          val value = d * d * d
+          val fullfilled =
+            (node1Opt, node2Opt) match {
+              case (Some(node1), Some(node2)) =>
+                (node1 pathTo node2) match {
+                  case None => false
+                  case _ => true
+                }
+              case _ => false
+            }
+          if (fullfilled) {
+            result += value
+          } else {
+            result -= value
+          }
+      })
+    }
+    result
+  }
+
+  def scoreMineSite(punter: Punter, subgraph: GraphMap, mine: Node, site: Node): Int = {
     if (subgraph.hasPath(mine, site)) {
       val d = distance(mine, site)
       d * d
@@ -206,11 +239,12 @@ case class GraphMap(var graph: Graph[Node, LUnDiEdge]) extends Logging {
     }).sum
   }
 
-  def score(punter : Punter) : Int = {
+  def score(punter: Punter, futures: Option[List[Future]]): Int = {
     val subgraph = getPunterSubgraph(punter)
-    getMineNodes.toSeq.map({
+    val commonScore = getMineNodes.toSeq.map({
       node: Graph[Node, LUnDiEdge]#NodeT => scoreMine(punter, subgraph, node.value)
     }).sum
+    commonScore + futuresScore(futures, punter)
   }
 
   def test(): Unit = {
