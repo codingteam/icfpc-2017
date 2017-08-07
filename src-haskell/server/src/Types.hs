@@ -30,17 +30,22 @@ instance FromJSON ServerMessage where
 instance ToJSON ServerMessage where
   toJSON (SHelloRs hello) = toJSON hello
   toJSON (SSetupRq setup) = toJSON setup
+  toJSON (SMoveRq moves) = toJSON moves
+  toJSON (SStop stop) = toJSON stop
 
 data ClientMessage =
   CHelloRq HelloRq
   | CSetupRs SetupRs
+  | CMove Move
   deriving (Eq, Show)
 
 instance FromJSON ClientMessage where
   parseJSON x@(Object v) = do
     if "me" `H.member` v
       then CHelloRq <$> parseJSON x
-      else CSetupRs <$> parseJSON x
+      else if "ready" `H.member` v
+        then CSetupRs <$> parseJSON x
+        else CMove <$> parseJSON x
 
 data HelloRq = HelloRq {hrqName :: PunterName}
   deriving (Eq, Show)
@@ -175,6 +180,14 @@ instance FromJSON MoveRq where
     moves <- move .: "moves"
     return $ MoveRq moves
 
+instance ToJSON MoveRq where
+  toJSON (MoveRq moves) =
+    object [
+      "move" .= object [
+        "moves" .= moves
+      ]
+    ]
+
 type MoveRs = Move
 
 data StopRq = StopRq {stopMoves :: [Move], stopScores :: [Score]}
@@ -186,6 +199,21 @@ instance FromJSON StopRq where
     moves <- stop .: "moves"
     return $ StopRq moves []
 
+instance ToJSON StopRq where
+  toJSON (StopRq moves scores) =
+    object [
+      "stop" .= object [
+        "moves" .= moves
+      , "scores" .= scores
+      ]
+    ]
+
 data Score = Score {scorePunter :: PunterId, scoreValue :: Int}
   deriving (Eq, Show)
 
+instance ToJSON Score where
+  toJSON (Score punterId score) =
+    object [
+      "punter" .= punterId
+    , "score" .= score
+    ]
